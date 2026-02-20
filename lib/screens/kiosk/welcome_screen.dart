@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../models/cart_controller.dart';
+import '../../theme/app_theme.dart';
 import '../../services/sound_service.dart';
 import 'phone_screen.dart';
 
@@ -83,12 +84,11 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
       body: Container(
-        color: const Color(0xFF003323),
+        color: AppTheme.brandGreen,
         child: SafeArea(
           child: Column(
             children: [
@@ -102,13 +102,13 @@ class WelcomeScreen extends StatelessWidget {
                       width: 120,
                       height: 120,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF50D387),
+                        color: AppTheme.brandMint,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.storefront_rounded,
                         size: 64,
-                        color: Color(0xFF003323),
+                        color: AppTheme.brandGreen,
                       ),
                     ),
                     const SizedBox(height: 32),

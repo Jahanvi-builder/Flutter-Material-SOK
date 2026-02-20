@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../models/cart_controller.dart';
+import '../../theme/app_theme.dart';
 import '../../services/sound_service.dart';
 import 'menu_screen.dart';
 
@@ -81,7 +82,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
 
     return Scaffold(
       body: Container(
-        color: const Color(0xFF003323),
+        color: AppTheme.brandGreen,
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
@@ -194,8 +195,8 @@ class _PhoneContent extends StatelessWidget {
               child: FilledButton(
                 onPressed: hasNumber ? onContinue : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF50D387),
-                  foregroundColor: const Color(0xFF003323),
+                  backgroundColor: AppTheme.brandMint,
+                  foregroundColor: AppTheme.brandGreen,
                   disabledBackgroundColor: Colors.white12,
                   disabledForegroundColor: Colors.white30,
                   padding: const EdgeInsets.symmetric(vertical: 22),
@@ -237,7 +238,7 @@ class _PhoneField extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: focusNode.hasFocus
-                  ? const Color(0xFF50D387)
+                  ? AppTheme.brandMint
                   : Colors.white24,
               width: 1.5,
             ),
@@ -287,7 +288,7 @@ class _PhoneField extends StatelessWidget {
                   padding: EdgeInsets.only(right: 16),
                   child: Icon(
                     Icons.check_circle_rounded,
-                    color: Color(0xFF50D387),
+                    color: AppTheme.brandMint,
                     size: 28,
                   ),
                 ),
@@ -343,7 +344,7 @@ class _OtpContent extends StatelessWidget {
               TextSpan(
                 text: '+91 ${phone.substring(0, 5)} ${phone.substring(5)}',
                 style: const TextStyle(
-                  color: Color(0xFF50D387),
+                  color: AppTheme.brandMint,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -372,7 +373,7 @@ class _OtpContent extends StatelessWidget {
                   foregroundColor: Colors.white70,
                   side: const BorderSide(color: Colors.white30, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 22),
-                  textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -386,8 +387,8 @@ class _OtpContent extends StatelessWidget {
               child: FilledButton(
                 onPressed: otpComplete ? onVerify : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF50D387),
-                  foregroundColor: const Color(0xFF003323),
+                  backgroundColor: AppTheme.brandMint,
+                  foregroundColor: AppTheme.brandGreen,
                   disabledBackgroundColor: Colors.white12,
                   disabledForegroundColor: Colors.white30,
                   padding: const EdgeInsets.symmetric(vertical: 22),
@@ -436,7 +437,7 @@ class _OtpBox extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: focusNode.hasFocus
-                  ? const Color(0xFF50D387)
+                  ? AppTheme.brandMint
                   : Colors.white24,
               width: 1.5,
             ),

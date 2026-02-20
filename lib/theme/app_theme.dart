@@ -4,9 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // Pine Labs brand colors
-  static const _pinelabsGreen = Color(0xFF003323); // primary
-  static const _pinelabsMint = Color(0xFF50D387);  // secondary
+  // Pine Labs brand colors — use these in any screen that renders on the branded dark background
+  static const brandGreen = Color(0xFF003323);
+  static const brandMint  = Color(0xFF50D387);
+
+  static const _pinelabsGreen = brandGreen;
+  static const _pinelabsMint  = brandMint;
 
   static ThemeData light({ColorScheme? dynamicScheme}) {
     final scheme = dynamicScheme ?? _lightScheme;

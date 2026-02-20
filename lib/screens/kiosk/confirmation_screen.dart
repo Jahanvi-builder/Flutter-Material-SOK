@@ -98,7 +98,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                         padding: const EdgeInsets.all(20),
                         child: Column(
                           children: [
-                            Icon(Icons.confirmation_number_outlined, color: cs.primary),
+                            Icon(Icons.confirmation_number_outlined, size: 32, color: cs.primary),
                             const SizedBox(height: 8),
                             Text('Order No.', style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant)),
                             Text(
@@ -120,7 +120,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                         padding: const EdgeInsets.all(20),
                         child: Column(
                           children: [
-                            Icon(Icons.schedule_rounded, color: cs.tertiary),
+                            Icon(Icons.schedule_rounded, size: 32, color: cs.tertiary),
                             const SizedBox(height: 8),
                             Text('Est. Time', style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant)),
                             Text(
@@ -196,7 +196,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                 label: const Text('Start New Order'),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
-                  textStyle: const TextStyle(fontSize: 16),
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],

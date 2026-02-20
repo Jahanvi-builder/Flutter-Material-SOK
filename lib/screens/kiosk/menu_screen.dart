@@ -93,7 +93,7 @@ class _MenuScreenState extends State<MenuScreen> {
                         onSelected: (_) => setState(() => _selectedCategory = cat),
                         showCheckmark: false,
                         shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       );
                     },
                   ),
