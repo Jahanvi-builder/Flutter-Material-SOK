@@ -227,13 +227,22 @@ class _MenuItemCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Placeholder image — fixed height
-            SizedBox(
-              height: 160,
-              width: double.infinity,
-              child: ColoredBox(
-                color: item.color.withAlpha(50),
-                child: Icon(item.icon, size: 64, color: item.color),
-              ),
+            Stack(
+              children: [
+                SizedBox(
+                  height: 160,
+                  width: double.infinity,
+                  child: ColoredBox(
+                    color: item.color.withAlpha(50),
+                    child: Icon(item.icon, size: 64, color: item.color),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: _VegIndicator(isVeg: item.isVeg),
+                ),
+              ],
             ),
 
             // Text block — Expanded so it fills remaining space and
@@ -298,6 +307,36 @@ class _MenuItemCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Standard Indian veg / non-veg dot indicator
+class _VegIndicator extends StatelessWidget {
+  const _VegIndicator({required this.isVeg});
+  final bool isVeg;
+
+  static const _vegColor   = Color(0xFF2E7D32); // dark green
+  static const _nonVegColor = Color(0xFFB71C1C); // dark red
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isVeg ? _vegColor : _nonVegColor;
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: color, width: 1.5),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Center(
+        child: Container(
+          width: 9,
+          height: 9,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
       ),
     );

@@ -140,6 +140,42 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                   ],
                 ),
                 const SizedBox(height: 8),
+
+                // Sub-category + veg indicator + prep time
+                Row(
+                  children: [
+                    _VegIndicator(isVeg: item.isVeg),
+                    const SizedBox(width: 8),
+                    Text(
+                      item.subCategory,
+                      style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                    const Spacer(),
+                    Icon(Icons.schedule_rounded, size: 14, color: cs.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text(
+                      item.prepTime,
+                      style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+
+                // Spice level
+                if (item.spiceLevel > 0) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: List.generate(5, (i) => Padding(
+                      padding: const EdgeInsets.only(right: 2),
+                      child: Icon(
+                        Icons.local_fire_department,
+                        size: 16,
+                        color: i < item.spiceLevel ? const Color(0xFFE53935) : cs.outlineVariant,
+                      ),
+                    )),
+                  ),
+                ],
+
+                const SizedBox(height: 8),
                 Text(item.description, style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
 
                 // Sizes
@@ -264,6 +300,36 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// Standard Indian veg / non-veg dot indicator
+class _VegIndicator extends StatelessWidget {
+  const _VegIndicator({required this.isVeg});
+  final bool isVeg;
+
+  static const _vegColor   = Color(0xFF2E7D32);
+  static const _nonVegColor = Color(0xFFB71C1C);
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isVeg ? _vegColor : _nonVegColor;
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: color, width: 1.5),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Center(
+        child: Container(
+          width: 9,
+          height: 9,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+      ),
     );
   }
 }
