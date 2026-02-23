@@ -35,8 +35,9 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
     _scaleAnim = CurvedAnimation(parent: _animController, curve: Curves.elasticOut);
     _animController.forward();
 
-    // Clear cart after snapshot
-    widget.cart.clear();
+    // Clear cart after the first frame — calling clear() synchronously in
+    // initState fires notifyListeners() during build, causing a framework error.
+    WidgetsBinding.instance.addPostFrameCallback((_) => widget.cart.clear());
   }
 
   @override
