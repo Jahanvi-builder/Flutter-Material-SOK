@@ -35,7 +35,7 @@ class _OrderTypeButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 28),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 28),
         decoration: BoxDecoration(
           color: cs.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(24),
@@ -141,7 +141,7 @@ class WelcomeScreen extends StatelessWidget {
                       'How would you like your order?',
                       style: tt.titleLarge?.copyWith(color: Colors.white70),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 12),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Center(
@@ -163,7 +163,7 @@ class WelcomeScreen extends StatelessWidget {
 
               // Footer — Powered by Pine Labs
               Padding(
-                padding: const EdgeInsets.only(bottom: 28),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

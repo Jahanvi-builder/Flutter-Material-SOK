@@ -15,6 +15,7 @@ class MenuItem {
   final Color color;
   final List<String> sizes;
   final List<String> addOns;
+  final double rating;
 
   const MenuItem({
     required this.id,
@@ -31,5 +32,6 @@ class MenuItem {
     required this.color,
     this.sizes = const [],
     this.addOns = const [],
+    this.rating = 4.0,
   });
 }

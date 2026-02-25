@@ -20,6 +20,7 @@ class MenuScreen extends StatefulWidget {
 class _MenuScreenState extends State<MenuScreen> {
   String _selectedCategory = 'All';
   String _searchQuery = '';
+  bool _searchVisible = false;
   final _searchController = TextEditingController();
 
   List<MenuItem> get _filtered {
@@ -73,38 +74,76 @@ class _MenuScreenState extends State<MenuScreen> {
 
       body: Column(
         children: [
-          // Category chips + search
+          // Category chips
           SizedBox(
-            height: 72,
-            child: Row(
-              children: [
-                Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: menuCategories.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (context, i) {
-                      final cat = menuCategories[i];
-                      final selected = cat == _selectedCategory;
-                      return FilterChip(
-                        label: Text(cat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        selected: selected,
-                        onSelected: (_) => setState(() => _selectedCategory = cat),
-                        showCheckmark: false,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      );
-                    },
-                  ),
-                ),
-                // Search field
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 12, 10),
-                  child: SizedBox(
-                    width: 200,
+            height: 80,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              scrollDirection: Axis.horizontal,
+              itemCount: menuCategories.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (context, i) {
+                final cat = menuCategories[i];
+                final selected = cat == _selectedCategory;
+
+                Widget chipLabel;
+                if (cat == 'All') {
+                  chipLabel = Text(cat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600));
+                } else {
+                  final leader = menuItems.firstWhere(
+                    (item) => item.category == cat,
+                    orElse: () => menuItems.first,
+                  );
+                  chipLabel = Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipOval(
+                        child: SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: leader.imagePath.isNotEmpty
+                              ? Image.asset(
+                                  leader.imagePath,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => ColoredBox(
+                                    color: leader.color.withAlpha(50),
+                                    child: Center(child: Icon(leader.icon, size: 14, color: leader.color)),
+                                  ),
+                                )
+                              : ColoredBox(
+                                  color: leader.color.withAlpha(50),
+                                  child: Center(child: Icon(leader.icon, size: 14, color: leader.color)),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(cat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    ],
+                  );
+                }
+
+                return FilterChip(
+                  label: chipLabel,
+                  selected: selected,
+                  onSelected: (_) => setState(() => _selectedCategory = cat),
+                  showCheckmark: false,
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+                );
+              },
+            ),
+          ),
+
+          // Collapsible search bar
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: _searchVisible
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                     child: TextField(
                       controller: _searchController,
+                      autofocus: true,
                       decoration: InputDecoration(
                         hintText: 'Search menu…',
                         prefixIcon: const Icon(Icons.search, size: 18),
@@ -127,10 +166,8 @@ class _MenuScreenState extends State<MenuScreen> {
                       ),
                       onChanged: (v) => setState(() => _searchQuery = v),
                     ),
-                  ),
-                ),
-              ],
-            ),
+                  )
+                : const SizedBox.shrink(),
           ),
 
           const Divider(height: 1),
@@ -145,17 +182,23 @@ class _MenuScreenState extends State<MenuScreen> {
                   < 1100 => 2,
                   _ => 3,
                 };
+                // Card width → 4:3 image height + fixed text/button area (~160px)
+                const hSpacing = 12.0;
+                const hPadding = 32.0; // 16 left + 16 right
+                final cardWidth = (width - hPadding - (columns - 1) * hSpacing) / columns;
+                final cardHeight = cardWidth * 3 / 4 + 200;
                 return GridView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: columns,
-                    crossAxisSpacing: 12,
+                    crossAxisSpacing: hSpacing,
                     mainAxisSpacing: 12,
-                    mainAxisExtent: 360,
+                    childAspectRatio: cardWidth / cardHeight,
                   ),
                   itemCount: _filtered.length,
                   itemBuilder: (context, i) => _MenuItemCard(
                     item: _filtered[i],
+                    cart: widget.cart,
                     onTap: () => _openDetail(_filtered[i]),
                   ),
                 );
@@ -168,39 +211,65 @@ class _MenuScreenState extends State<MenuScreen> {
       floatingActionButton: ListenableBuilder(
         listenable: widget.cart,
         builder: (context, _) {
-          if (widget.cart.isEmpty) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
+          final searchFab = FloatingActionButton(
+            heroTag: 'search_fab',
             onPressed: () {
               SoundService.playTap();
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => CartScreen(cart: widget.cart)),
-              );
+              setState(() {
+                _searchVisible = !_searchVisible;
+                if (!_searchVisible) {
+                  _searchController.clear();
+                  _searchQuery = '';
+                }
+              });
             },
-            icon: Badge(
-              label: Text('${widget.cart.itemCount}'),
-              child: const Icon(Icons.shopping_cart_outlined),
+            child: Icon(
+              _searchVisible ? Icons.search_off_rounded : Icons.search_rounded,
             ),
-            label: Row(
-              children: [
-                const Text(
-                  'Go to Cart',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          );
+
+          if (widget.cart.isEmpty) return searchFab;
+
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton.extended(
+                heroTag: 'cart_fab',
+                onPressed: () {
+                  SoundService.playTap();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => CartScreen(cart: widget.cart)),
+                  );
+                },
+                icon: Badge(
+                  label: Text('${widget.cart.itemCount}'),
+                  child: const Icon(Icons.shopping_cart_outlined),
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onPrimary.withAlpha(40),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '₹${widget.cart.total.round()}',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
+                label: Row(
+                  children: [
+                    const Text(
+                      'Go to Cart',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.onPrimary.withAlpha(40),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '₹${widget.cart.total.round()}',
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 16),
+              searchFab,
+            ],
           );
         },
       ),
@@ -208,11 +277,21 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 }
 
+Color _starColor(double rating) {
+  if (rating >= 4.5) return const Color(0xFF2E7D32); // dark green
+  if (rating >= 4.0) return const Color(0xFFFFA726); // amber
+  if (rating >= 3.5) return const Color(0xFF66BB6A); // light green
+  return const Color(0xFFFFA726);
+}
+
 class _MenuItemCard extends StatelessWidget {
-  const _MenuItemCard({required this.item, required this.onTap});
+  const _MenuItemCard({required this.item, required this.cart, required this.onTap});
 
   final MenuItem item;
+  final CartController cart;
   final VoidCallback onTap;
+
+  bool get _isCustomizable => item.sizes.isNotEmpty || item.addOns.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -226,23 +305,22 @@ class _MenuItemCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Placeholder image — fixed height
-            Stack(
-              children: [
-                SizedBox(
-                  height: 160,
-                  width: double.infinity,
-                  child: ColoredBox(
-                    color: item.color.withAlpha(50),
-                    child: Icon(item.icon, size: 64, color: item.color),
-                  ),
-                ),
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: _VegIndicator(isVeg: item.isVeg),
-                ),
-              ],
+            // Image — real asset when available, icon placeholder otherwise
+            AspectRatio(
+              aspectRatio: 4 / 3,
+              child: item.imagePath.isNotEmpty
+                  ? Image.asset(
+                      item.imagePath,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => ColoredBox(
+                        color: item.color.withAlpha(50),
+                        child: Center(child: Icon(item.icon, size: 64, color: item.color)),
+                      ),
+                    )
+                  : ColoredBox(
+                      color: item.color.withAlpha(50),
+                      child: Center(child: Icon(item.icon, size: 64, color: item.color)),
+                    ),
             ),
 
             // Text block — Expanded so it fills remaining space and
@@ -250,7 +328,7 @@ class _MenuItemCard extends StatelessWidget {
             Expanded(
               child: ClipRect(
                 child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -267,6 +345,20 @@ class _MenuItemCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.star_rounded, size: 16, color: _starColor(item.rating)),
+                        const SizedBox(width: 3),
+                        Text(
+                          item.rating.toStringAsFixed(1),
+                          style: tt.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -274,69 +366,103 @@ class _MenuItemCard extends StatelessWidget {
             ),
 
             // Price + add button — always at bottom
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '₹${item.price.round()}',
-                    style: tt.titleSmall?.copyWith(
-                      fontSize: 20,
-                      color: cs.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final buttonWidth = constraints.maxWidth * 0.5;
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '₹${item.price.round()}',
+                        style: tt.titleSmall?.copyWith(
+                          fontSize: 20,
+                          color: cs.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (_isCustomizable)
+                        FilledButton.tonal(
+                          onPressed: onTap,
+                          style: FilledButton.styleFrom(
+                            fixedSize: Size(buttonWidth, 56),
+                            iconSize: 22,
+                            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add),
+                              SizedBox(width: 6),
+                              Text('Add'),
+                            ],
+                          ),
+                        )
+                      else
+                        ListenableBuilder(
+                          listenable: cart,
+                          builder: (context, _) {
+                            final matches = cart.items.where((ci) => ci.item.id == item.id);
+                            final cartItem = matches.isEmpty ? null : matches.first;
+                            final count = cartItem?.quantity ?? 0;
+
+                            if (count == 0) {
+                              return FilledButton.tonal(
+                                onPressed: () {
+                                  SoundService.playTap();
+                                  cart.add(item);
+                                },
+                                style: FilledButton.styleFrom(
+                                  fixedSize: Size(buttonWidth, 56),
+                                  iconSize: 22,
+                                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.add),
+                                    SizedBox(width: 6),
+                                    Text('Add'),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            return SizedBox(
+                              width: buttonWidth,
+                              height: 56,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: cs.outlineVariant),
+                                  borderRadius: BorderRadius.circular(28),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.remove),
+                                      constraints: const BoxConstraints.tightFor(width: 56, height: 56),
+                                      onPressed: () { SoundService.playTap(); cart.decrement(cartItem!); },
+                                    ),
+                                    Text('$count', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      constraints: const BoxConstraints.tightFor(width: 56, height: 56),
+                                      onPressed: () { SoundService.playTap(); cart.increment(cartItem!); },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                    ],
                   ),
-                  FilledButton.tonal(
-                    onPressed: onTap,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(120, 56),
-                      iconSize: 22,
-                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.add),
-                        SizedBox(width: 6),
-                        Text('Add'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// Standard Indian veg / non-veg dot indicator
-class _VegIndicator extends StatelessWidget {
-  const _VegIndicator({required this.isVeg});
-  final bool isVeg;
-
-  static const _vegColor   = Color(0xFF2E7D32); // dark green
-  static const _nonVegColor = Color(0xFFB71C1C); // dark red
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isVeg ? _vegColor : _nonVegColor;
-    return Container(
-      width: 18,
-      height: 18,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: color, width: 1.5),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Center(
-        child: Container(
-          width: 9,
-          height: 9,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
       ),
     );

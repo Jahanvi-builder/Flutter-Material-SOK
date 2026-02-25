@@ -85,7 +85,7 @@ class AppTheme {
       colorScheme: scheme,
       cardTheme: CardThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(28)),
+          borderRadius: const BorderRadius.all(Radius.circular(32)),
           side: BorderSide(color: scheme.outlineVariant),
         ),
       ),

@@ -64,6 +64,12 @@ flutter:
   assets:
     - images/logo/
     - sounds/
+    - Images/Food/Quick bites/
+    - Images/Food/Chinese/
+    - Images/Food/Beverages/
+    - Images/Food/North indian/
+    - Images/Food/SouthIndian/
+    - Images/Food/Combos/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

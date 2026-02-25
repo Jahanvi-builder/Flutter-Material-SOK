@@ -4,6 +4,13 @@ import '../../models/cart_controller.dart';
 import '../../models/menu_item.dart';
 import '../../services/sound_service.dart';
 
+Color _starColor(double rating) {
+  if (rating >= 4.5) return const Color(0xFF2E7D32); // dark green
+  if (rating >= 4.0) return const Color(0xFFFFA726); // amber
+  if (rating >= 3.5) return const Color(0xFF66BB6A); // light green
+  return const Color(0xFFFFA726);
+}
+
 // Shared chip style matching the menu category chips
 const _chipShape = StadiumBorder();
 const _chipPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 12);
@@ -104,18 +111,28 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
         Flexible(
           child: SingleChildScrollView(
             controller: widget.scrollController,
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Placeholder image
+                // Image — real asset when available, icon placeholder otherwise
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    height: 200,
-                    width: double.infinity,
-                    color: item.color.withAlpha(60),
-                    child: Icon(item.icon, size: 80, color: item.color),
+                  child: AspectRatio(
+                    aspectRatio: 4 / 3,
+                    child: item.imagePath.isNotEmpty
+                        ? Image.asset(
+                            item.imagePath,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => ColoredBox(
+                              color: item.color.withAlpha(60),
+                              child: Center(child: Icon(item.icon, size: 80, color: item.color)),
+                            ),
+                          )
+                        : ColoredBox(
+                            color: item.color.withAlpha(60),
+                            child: Center(child: Icon(item.icon, size: 80, color: item.color)),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -149,6 +166,13 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                     Text(
                       item.subCategory,
                       style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                    const SizedBox(width: 12),
+                    Icon(Icons.star_rounded, size: 16, color: _starColor(item.rating)),
+                    const SizedBox(width: 3),
+                    Text(
+                      item.rating.toStringAsFixed(1),
+                      style: tt.labelMedium?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const Spacer(),
                     Icon(Icons.schedule_rounded, size: 14, color: cs.onSurfaceVariant),
@@ -274,17 +298,11 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                             addOns: _selectedAddOns.toList(),
                             quantity: _quantity,
                           );
+                          // Capture overlay + colors before the pop disposes context.
+                          final overlay = Overlay.of(context);
+                          final cs = Theme.of(context).colorScheme;
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${item.name} added to order'),
-                              behavior: SnackBarBehavior.floating,
-                              duration: const Duration(seconds: 2),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          );
+                          _showToast(overlay, '${item.name} added to order', cs);
                         },
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 20),
@@ -302,6 +320,40 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
       ],
     );
   }
+}
+
+/// Content-hugging centered toast — bypasses SnackBar's full-width behaviour.
+void _showToast(OverlayState overlay, String message, ColorScheme cs) {
+  late OverlayEntry entry;
+  entry = OverlayEntry(
+    builder: (_) => Positioned(
+      bottom: 80,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Material(
+          color: cs.inverseSurface,
+          borderRadius: BorderRadius.circular(12),
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Text(
+              message,
+              style: TextStyle(
+                color: cs.onInverseSurface,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  overlay.insert(entry);
+  Future.delayed(const Duration(seconds: 2), () {
+    if (entry.mounted) entry.remove();
+  });
 }
 
 // Standard Indian veg / non-veg dot indicator

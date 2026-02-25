@@ -4,14 +4,53 @@ import '../models/menu_item.dart';
 
 const List<String> menuCategories = [
   'All',
+  'Beverages',
+  'Combos',
   'North Indian',
   'South Indian',
   'Indo-Chinese',
   'Quick Bites',
-  'Beverages',
 ];
 
 const List<MenuItem> menuItems = [
+
+  // ── Combos › Thali ────────────────────────────────────────────────────────
+  MenuItem(
+    id: 'CMB_001', name: 'North Indian Veg Thali',
+    description: 'Dal Makhani, Paneer curry, 2 Rotis, Jeera Rice, Raita & dessert.',
+    price: 260, category: 'Combos', subCategory: 'Thali',
+    isVeg: true, spiceLevel: 2, prepTime: '10 mins',
+    imagePath: 'Images/Food/Combos/north_veg_meal.jpg',
+    rating: 4.5,
+    icon: Icons.set_meal, color: Color(0xFF66BB6A),
+  ),
+  MenuItem(
+    id: 'CMB_002', name: 'North Indian Non-Veg Thali',
+    description: 'Butter Chicken, 2 Rotis, Chicken Biryani, Raita & dessert.',
+    price: 360, category: 'Combos', subCategory: 'Thali',
+    isVeg: false, spiceLevel: 2, prepTime: '12 mins',
+    imagePath: 'Images/Food/Combos/north_no-veg.jpg',
+    rating: 4.6,
+    icon: Icons.set_meal, color: Color(0xFFFF7043),
+  ),
+  MenuItem(
+    id: 'CMB_003', name: 'South Indian Veg Thali',
+    description: '2 Idlis, Vada, Masala Dosa, Sambar, 2 Chutneys, Rice & Rasam.',
+    price: 190, category: 'Combos', subCategory: 'Thali',
+    isVeg: true, spiceLevel: 1, prepTime: '8 mins',
+    imagePath: 'Images/Food/Combos/south_veg_meal.jpg',
+    rating: 4.4,
+    icon: Icons.set_meal, color: Color(0xFFFFCA28),
+  ),
+  MenuItem(
+    id: 'CMB_004', name: 'South Indian Non-Veg Thali',
+    description: 'Chicken Ghee Roast, Rice, Sambar, Rasam, 2 Chutneys & Papad.',
+    price: 300, category: 'Combos', subCategory: 'Thali',
+    isVeg: false, spiceLevel: 3, prepTime: '12 mins',
+    imagePath: 'Images/Food/Combos/south_no-veg.jpg',
+    rating: 4.7,
+    icon: Icons.set_meal, color: Color(0xFFEF5350),
+  ),
 
   // ── North Indian › Breads ─────────────────────────────────────────────────
   MenuItem(
@@ -19,7 +58,8 @@ const List<MenuItem> menuItems = [
     description: 'Freshly baked clay oven bread glazed with butter.',
     price: 45, category: 'North Indian', subCategory: 'Breads',
     isVeg: true, spiceLevel: 0, prepTime: '8 mins',
-    imagePath: 'Butter_Naan.jpg',
+    imagePath: 'Images/Food/North indian/Butter naam.jpg',
+    rating: 4.3,
     icon: Icons.bakery_dining, color: Color(0xFFFFB74D),
   ),
   MenuItem(
@@ -27,7 +67,8 @@ const List<MenuItem> menuItems = [
     description: 'Whole wheat bread baked in a traditional clay oven.',
     price: 35, category: 'North Indian', subCategory: 'Breads',
     isVeg: true, spiceLevel: 0, prepTime: '8 mins',
-    imagePath: 'Tandoori_Roti.jpg',
+    imagePath: 'Images/Food/North indian/tandoori roti.jpg',
+    rating: 4.1,
     icon: Icons.bakery_dining, color: Color(0xFFFF8A65),
   ),
   MenuItem(
@@ -35,7 +76,8 @@ const List<MenuItem> menuItems = [
     description: 'Leavened bread topped with minced garlic and herbs.',
     price: 60, category: 'North Indian', subCategory: 'Breads',
     isVeg: true, spiceLevel: 1, prepTime: '10 mins',
-    imagePath: 'Garlic_Naan.jpg',
+    imagePath: 'Images/Food/North indian/Garlic naam.jpg',
+    rating: 4.6,
     icon: Icons.bakery_dining, color: Color(0xFFFF7043),
   ),
   MenuItem(
@@ -43,7 +85,8 @@ const List<MenuItem> menuItems = [
     description: 'Multi-layered flaky whole wheat bread.',
     price: 55, category: 'North Indian', subCategory: 'Breads',
     isVeg: true, spiceLevel: 0, prepTime: '10 mins',
-    imagePath: 'Lachha_Paratha.jpg',
+    imagePath: 'Images/Food/North indian/laccha paratha.jpg',
+    rating: 4.2,
     icon: Icons.bakery_dining, color: Color(0xFFA1887F),
   ),
 
@@ -53,7 +96,8 @@ const List<MenuItem> menuItems = [
     description: 'Slow-cooked black lentils with cream and butter.',
     price: 180, category: 'North Indian', subCategory: 'Gravy (Veg)',
     isVeg: true, spiceLevel: 1, prepTime: '5 mins',
-    imagePath: 'Dal_Makhani.jpg',
+    imagePath: 'Images/Food/North indian/dal_makhni.jpg',
+    rating: 4.7,
     icon: Icons.soup_kitchen, color: Color(0xFFBF360C),
   ),
   MenuItem(
@@ -61,7 +105,8 @@ const List<MenuItem> menuItems = [
     description: 'Yellow lentils tempered with garlic, cumin, and dry red chilies.',
     price: 160, category: 'North Indian', subCategory: 'Gravy (Veg)',
     isVeg: true, spiceLevel: 2, prepTime: '5 mins',
-    imagePath: 'Dal_Tadka.jpg',
+    imagePath: 'Images/Food/North indian/dal_tadka.jpg',
+    rating: 4.4,
     icon: Icons.soup_kitchen, color: Color(0xFFF57F17),
   ),
   MenuItem(
@@ -69,7 +114,8 @@ const List<MenuItem> menuItems = [
     description: 'Grilled cottage cheese in a spicy onion-tomato gravy.',
     price: 220, category: 'North Indian', subCategory: 'Gravy (Veg)',
     isVeg: true, spiceLevel: 3, prepTime: '15 mins',
-    imagePath: 'Paneer_Tikka_Masala.jpg',
+    imagePath: 'Images/Food/North indian/Paneer_tikka_masala.jpg',
+    rating: 4.6,
     icon: Icons.soup_kitchen, color: Color(0xFFFF7043),
   ),
   MenuItem(
@@ -77,7 +123,8 @@ const List<MenuItem> menuItems = [
     description: 'Soft paneer dumplings in a rich, sweet cashew gravy.',
     price: 240, category: 'North Indian', subCategory: 'Gravy (Veg)',
     isVeg: true, spiceLevel: 0, prepTime: '15 mins',
-    imagePath: 'Malai_Kofta.jpg',
+    imagePath: 'Images/Food/North indian/Malai kofta.jpg',
+    rating: 4.3,
     icon: Icons.soup_kitchen, color: Color(0xFFFFAB91),
   ),
   MenuItem(
@@ -85,7 +132,8 @@ const List<MenuItem> menuItems = [
     description: 'Stir-fried okra with double onions and spices.',
     price: 170, category: 'North Indian', subCategory: 'Gravy (Veg)',
     isVeg: true, spiceLevel: 2, prepTime: '12 mins',
-    imagePath: 'Bhindi_Do_Pyaza.jpg',
+    imagePath: 'Images/Food/North indian/Bhindi.jpg',
+    rating: 3.9,
     icon: Icons.set_meal, color: Color(0xFF8BC34A),
   ),
 
@@ -95,7 +143,8 @@ const List<MenuItem> menuItems = [
     description: 'Smokey, spicy cottage cheese cubes grilled in a tandoor.',
     price: 240, category: 'North Indian', subCategory: 'Starters',
     isVeg: true, spiceLevel: 4, prepTime: '15 mins',
-    imagePath: 'Paneer_Tikka_Angare.jpg',
+    imagePath: 'Images/Food/North indian/Paneer_tikka.jpg',
+    rating: 4.5,
     icon: Icons.kebab_dining, color: Color(0xFFFF5722),
   ),
 
@@ -105,7 +154,8 @@ const List<MenuItem> menuItems = [
     description: 'Boneless chicken in a creamy, tangy tomato sauce.',
     price: 280, category: 'North Indian', subCategory: 'Gravy (Non-Veg)',
     isVeg: false, spiceLevel: 2, prepTime: '18 mins',
-    imagePath: 'Murgh_Lababdar.jpg',
+    imagePath: 'Images/Food/North indian/Chicken lababdaar.jpg',
+    rating: 4.4,
     icon: Icons.set_meal, color: Color(0xFFFF8A65),
   ),
   MenuItem(
@@ -113,7 +163,8 @@ const List<MenuItem> menuItems = [
     description: 'Tandoori chicken pulled and cooked in a velvety butter sauce.',
     price: 320, category: 'North Indian', subCategory: 'Gravy (Non-Veg)',
     isVeg: false, spiceLevel: 1, prepTime: '18 mins',
-    imagePath: 'Classic_Butter_Chicken.jpg',
+    imagePath: 'Images/Food/North indian/butter_chicken.jpg',
+    rating: 4.8,
     icon: Icons.set_meal, color: Color(0xFFFFB74D),
   ),
   MenuItem(
@@ -121,7 +172,8 @@ const List<MenuItem> menuItems = [
     description: 'Slow-cooked lamb in a traditional Kashmiri red chili gravy.',
     price: 450, category: 'North Indian', subCategory: 'Gravy (Non-Veg)',
     isVeg: false, spiceLevel: 4, prepTime: '25 mins',
-    imagePath: 'Mutton_Rogan_Josh.jpg',
+    imagePath: 'Images/Food/North indian/mutton.jpg',
+    rating: 4.7,
     icon: Icons.set_meal, color: Color(0xFFD32F2F),
   ),
 
@@ -131,7 +183,8 @@ const List<MenuItem> menuItems = [
     description: 'Fragrant Basmati rice with seasonal veggies and mild spices.',
     price: 150, category: 'North Indian', subCategory: 'Rice',
     isVeg: true, spiceLevel: 1, prepTime: '10 mins',
-    imagePath: 'Vegetable_Pulao.jpg',
+    imagePath: 'Images/Food/North indian/Veg_pulao.jpg',
+    rating: 4.0,
     icon: Icons.rice_bowl, color: Color(0xFF81C784),
   ),
   MenuItem(
@@ -139,7 +192,8 @@ const List<MenuItem> menuItems = [
     description: 'Fragrant Basmati rice cooked with spice-marinated chicken.',
     price: 280, category: 'North Indian', subCategory: 'Rice',
     isVeg: false, spiceLevel: 3, prepTime: '15 mins',
-    imagePath: 'Lucknowi_Chicken_Biryani.jpg',
+    imagePath: 'Images/Food/North indian/biryani.jpg',
+    rating: 4.8,
     icon: Icons.rice_bowl, color: Color(0xFFFFCA28),
   ),
   MenuItem(
@@ -147,7 +201,8 @@ const List<MenuItem> menuItems = [
     description: 'Steamed Basmati rice tempered with cumin seeds and ghee.',
     price: 140, category: 'North Indian', subCategory: 'Rice',
     isVeg: true, spiceLevel: 1, prepTime: '5 mins',
-    imagePath: 'Jeera_Rice.jpg',
+    imagePath: 'Images/Food/North indian/jeera_rice.jpg',
+    rating: 4.2,
     icon: Icons.rice_bowl, color: Color(0xFFFFF176),
   ),
 
@@ -157,7 +212,8 @@ const List<MenuItem> menuItems = [
     description: 'Steamed rice cakes tossed in spicy lentil powder and ghee.',
     price: 90, category: 'South Indian', subCategory: 'Tiffin',
     isVeg: true, spiceLevel: 3, prepTime: '5 mins',
-    imagePath: 'Ghee_Podi_Idli_(2_pcs).jpg',
+    imagePath: 'Images/Food/SouthIndian/Gheepodi idli.jpg',
+    rating: 4.5,
     icon: Icons.breakfast_dining, color: Color(0xFFBCAAA4),
   ),
   MenuItem(
@@ -165,16 +221,9 @@ const List<MenuItem> menuItems = [
     description: 'Savory lentil doughnuts served with sambar and chutney.',
     price: 90, category: 'South Indian', subCategory: 'Tiffin',
     isVeg: true, spiceLevel: 1, prepTime: '8 mins',
-    imagePath: 'Medu_Vada_(2_pcs).jpg',
+    imagePath: 'Images/Food/SouthIndian/medu vada.jpg',
+    rating: 4.3,
     icon: Icons.breakfast_dining, color: Color(0xFFFFCA28),
-  ),
-  MenuItem(
-    id: 'SI_009', name: 'Ven Pongal',
-    description: 'Peppery rice and moong dal mash tempered with cashews.',
-    price: 95, category: 'South Indian', subCategory: 'Tiffin',
-    isVeg: true, spiceLevel: 1, prepTime: '5 mins',
-    imagePath: 'Ven_Pongal.jpg',
-    icon: Icons.breakfast_dining, color: Color(0xFFFFF9C4),
   ),
 
   // ── South Indian › Dosa ───────────────────────────────────────────────────
@@ -183,7 +232,8 @@ const List<MenuItem> menuItems = [
     description: 'Crispy crepe with spicy red chutney and potato mash.',
     price: 120, category: 'South Indian', subCategory: 'Dosa',
     isVeg: true, spiceLevel: 2, prepTime: '10 mins',
-    imagePath: 'Mysore_Masala_Dosa.jpg',
+    imagePath: 'Images/Food/SouthIndian/Mysore_dosa.jpg',
+    rating: 4.7,
     icon: Icons.breakfast_dining, color: Color(0xFFFFB74D),
   ),
   MenuItem(
@@ -191,7 +241,8 @@ const List<MenuItem> menuItems = [
     description: 'Thin, lacy semolina crepe with chopped onions.',
     price: 130, category: 'South Indian', subCategory: 'Dosa',
     isVeg: true, spiceLevel: 1, prepTime: '12 mins',
-    imagePath: 'Onion_Rava_Dosa.jpg',
+    imagePath: 'Images/Food/SouthIndian/Rava_dosa.jpg',
+    rating: 4.4,
     icon: Icons.breakfast_dining, color: Color(0xFFFFE082),
   ),
   MenuItem(
@@ -199,7 +250,8 @@ const List<MenuItem> menuItems = [
     description: 'Soft, spongy pancakes served with vegetable saagu.',
     price: 110, category: 'South Indian', subCategory: 'Dosa',
     isVeg: true, spiceLevel: 1, prepTime: '10 mins',
-    imagePath: 'Set_Dosa_(3_pcs).jpg',
+    imagePath: 'Images/Food/SouthIndian/Mysore_dosa.jpg',
+    rating: 4.2,
     icon: Icons.breakfast_dining, color: Color(0xFFFFECB3),
   ),
 
@@ -209,7 +261,8 @@ const List<MenuItem> menuItems = [
     description: 'Thick savory pancake topped with tomatoes and onions.',
     price: 115, category: 'South Indian', subCategory: 'Uttapam',
     isVeg: true, spiceLevel: 1, prepTime: '12 mins',
-    imagePath: 'Tomato_&_Onion_Uttapam.jpg',
+    imagePath: 'Images/Food/SouthIndian/Uttapam.jpg',
+    rating: 4.1,
     icon: Icons.breakfast_dining, color: Color(0xFFFF8A65),
   ),
 
@@ -219,7 +272,8 @@ const List<MenuItem> menuItems = [
     description: 'Hot lentil rice with tamarind, veggies, and ghee.',
     price: 100, category: 'South Indian', subCategory: 'Rice',
     isVeg: true, spiceLevel: 3, prepTime: '5 mins',
-    imagePath: 'Bisi_Bele_Bath.jpg',
+    imagePath: 'Images/Food/SouthIndian/bisi bele bhaat.jpg',
+    rating: 4.5,
     icon: Icons.rice_bowl, color: Color(0xFFEF5350),
   ),
   MenuItem(
@@ -227,7 +281,8 @@ const List<MenuItem> menuItems = [
     description: 'Rice tempered with mustard, curry leaves, and pomegranate.',
     price: 80, category: 'South Indian', subCategory: 'Rice',
     isVeg: true, spiceLevel: 0, prepTime: '3 mins',
-    imagePath: 'Curd_Rice.jpg',
+    imagePath: 'Images/Food/SouthIndian/Curd_rice.jpg',
+    rating: 4.3,
     icon: Icons.rice_bowl, color: Color(0xFFB2EBF2),
   ),
   MenuItem(
@@ -235,16 +290,9 @@ const List<MenuItem> menuItems = [
     description: 'Tangy rice tempered with peanuts and turmeric.',
     price: 90, category: 'South Indian', subCategory: 'Rice',
     isVeg: true, spiceLevel: 1, prepTime: '5 mins',
-    imagePath: 'Lemon_Rice.jpg',
+    imagePath: 'Images/Food/SouthIndian/Lemon rice.jpg',
+    rating: 4.4,
     icon: Icons.rice_bowl, color: Color(0xFFFFEE58),
-  ),
-  MenuItem(
-    id: 'SI_012', name: 'Puliogare',
-    description: 'Traditional spicy and sour tamarind-based rice.',
-    price: 95, category: 'South Indian', subCategory: 'Rice',
-    isVeg: true, spiceLevel: 3, prepTime: '5 mins',
-    imagePath: 'Puliogare_(Tamarind_Rice).jpg',
-    icon: Icons.rice_bowl, color: Color(0xFF795548),
   ),
 
   // ── South Indian › Curry ──────────────────────────────────────────────────
@@ -253,23 +301,17 @@ const List<MenuItem> menuItems = [
     description: 'Spicy, peppery mixed vegetable curry with coconut base.',
     price: 160, category: 'South Indian', subCategory: 'Curry',
     isVeg: true, spiceLevel: 4, prepTime: '15 mins',
-    imagePath: 'Chettinad_Veg_Curry.jpg',
+    imagePath: 'Images/Food/SouthIndian/Chettinad curry.jpg',
+    rating: 4.3,
     icon: Icons.soup_kitchen, color: Color(0xFF2E7D32),
-  ),
-  MenuItem(
-    id: 'SI_013', name: 'Vegetable Ishtu',
-    description: 'Mild, coconut milk-based stew with seasonal veggies.',
-    price: 140, category: 'South Indian', subCategory: 'Curry',
-    isVeg: true, spiceLevel: 0, prepTime: '15 mins',
-    imagePath: 'Vegetable_Ishtu_(Stew).jpg',
-    icon: Icons.soup_kitchen, color: Color(0xFF80CBC4),
   ),
   MenuItem(
     id: 'SI_014', name: 'Chicken Ghee Roast',
     description: 'Fiery Mangalorean chicken with clarified butter.',
     price: 310, category: 'South Indian', subCategory: 'Curry',
     isVeg: false, spiceLevel: 5, prepTime: '20 mins',
-    imagePath: 'Chicken_Ghee_Roast.jpg',
+    imagePath: 'Images/Food/SouthIndian/Chicken_gheeroast.jpg',
+    rating: 4.8,
     icon: Icons.set_meal, color: Color(0xFFB71C1C),
   ),
 
@@ -279,7 +321,8 @@ const List<MenuItem> menuItems = [
     description: 'Spicy soup topped with crunchy fried noodles.',
     price: 110, category: 'Indo-Chinese', subCategory: 'Soup',
     isVeg: true, spiceLevel: 3, prepTime: '8 mins',
-    imagePath: 'Veg_Manchow_Soup.jpg',
+    imagePath: 'Images/Food/Chinese/manchow_soup.jpg',
+    rating: 4.2,
     icon: Icons.soup_kitchen, color: Color(0xFFEF9A9A),
   ),
   MenuItem(
@@ -287,7 +330,8 @@ const List<MenuItem> menuItems = [
     description: 'Thick peppery soup with shredded chicken.',
     price: 130, category: 'Indo-Chinese', subCategory: 'Soup',
     isVeg: false, spiceLevel: 3, prepTime: '8 mins',
-    imagePath: 'Hot_&_Sour_Chicken_Soup.jpg',
+    imagePath: 'Images/Food/Chinese/manchow_soup.jpg',
+    rating: 4.3,
     icon: Icons.soup_kitchen, color: Color(0xFFEF5350),
   ),
 
@@ -297,7 +341,8 @@ const List<MenuItem> menuItems = [
     description: 'Crispy potatoes in sweet and spicy sesame glaze.',
     price: 160, category: 'Indo-Chinese', subCategory: 'Starters',
     isVeg: true, spiceLevel: 2, prepTime: '12 mins',
-    imagePath: 'Honey_Chilli_Potato.jpg',
+    imagePath: 'Images/Food/Chinese/honey_chilli_potato.jpg',
+    rating: 4.6,
     icon: Icons.fastfood, color: Color(0xFFFFCA28),
   ),
   MenuItem(
@@ -305,7 +350,8 @@ const List<MenuItem> menuItems = [
     description: 'Fried veggie balls in ginger-garlic soy sauce.',
     price: 190, category: 'Indo-Chinese', subCategory: 'Starters',
     isVeg: true, spiceLevel: 2, prepTime: '15 mins',
-    imagePath: 'Veg_Manchurian_(Dry).jpg',
+    imagePath: 'Images/Food/Chinese/manchurian.jpg',
+    rating: 4.4,
     icon: Icons.fastfood, color: Color(0xFF8BC34A),
   ),
   MenuItem(
@@ -313,7 +359,8 @@ const List<MenuItem> menuItems = [
     description: 'Chicken tossed with bell peppers and green chilies.',
     price: 260, category: 'Indo-Chinese', subCategory: 'Starters',
     isVeg: false, spiceLevel: 4, prepTime: '12 mins',
-    imagePath: 'Chilli_Chicken_(Dry).jpg',
+    imagePath: 'Images/Food/Chinese/chilli_chicken.jpg',
+    rating: 4.7,
     icon: Icons.fastfood, color: Color(0xFFE53935),
   ),
 
@@ -323,7 +370,8 @@ const List<MenuItem> menuItems = [
     description: 'Paneer cubes in bold, pungent garlic gravy.',
     price: 220, category: 'Indo-Chinese', subCategory: 'Main Gravy',
     isVeg: true, spiceLevel: 4, prepTime: '15 mins',
-    imagePath: 'Paneer_in_Hot_Garlic_Sauce.jpg',
+    imagePath: 'Images/Food/Chinese/Paneer_in_hotgarlic.jpg',
+    rating: 4.3,
     icon: Icons.set_meal, color: Color(0xFFEF5350),
   ),
   MenuItem(
@@ -331,7 +379,8 @@ const List<MenuItem> menuItems = [
     description: 'Chicken dumplings in thick, savory soy gravy.',
     price: 280, category: 'Indo-Chinese', subCategory: 'Main Gravy',
     isVeg: false, spiceLevel: 2, prepTime: '18 mins',
-    imagePath: 'Chicken_Manchurian_(Gravy).jpg',
+    imagePath: 'Images/Food/Chinese/manchurian.jpg',
+    rating: 4.5,
     icon: Icons.set_meal, color: Color(0xFF5D4037),
   ),
 
@@ -341,7 +390,8 @@ const List<MenuItem> menuItems = [
     description: 'Wok-tossed rice with scallions and vegetables.',
     price: 180, category: 'Indo-Chinese', subCategory: 'Rice',
     isVeg: true, spiceLevel: 1, prepTime: '10 mins',
-    imagePath: 'Veg_Fried_Rice.jpg',
+    imagePath: 'Images/Food/Chinese/fried_rice.jpg',
+    rating: 4.2,
     icon: Icons.rice_bowl, color: Color(0xFFBA68C8),
   ),
   MenuItem(
@@ -349,7 +399,8 @@ const List<MenuItem> menuItems = [
     description: 'Rice tossed in spicy house-made Schezwan sauce.',
     price: 210, category: 'Indo-Chinese', subCategory: 'Rice',
     isVeg: false, spiceLevel: 5, prepTime: '10 mins',
-    imagePath: 'Schezwan_Egg_Fried_Rice.jpg',
+    imagePath: 'Images/Food/Chinese/fried_rice.jpg',
+    rating: 4.5,
     icon: Icons.rice_bowl, color: Color(0xFFFF5722),
   ),
 
@@ -359,7 +410,8 @@ const List<MenuItem> menuItems = [
     description: 'Classic stir-fried noodles with julienne veggies.',
     price: 180, category: 'Indo-Chinese', subCategory: 'Noodles',
     isVeg: true, spiceLevel: 1, prepTime: '12 mins',
-    imagePath: 'Veg_Hakka_Noodles.jpg',
+    imagePath: 'Images/Food/Chinese/hakka_noodles.jpg',
+    rating: 4.3,
     icon: Icons.ramen_dining, color: Color(0xFF9575CD),
   ),
   MenuItem(
@@ -367,7 +419,8 @@ const List<MenuItem> menuItems = [
     description: 'Spicy noodles with burnt garlic and chili flakes.',
     price: 240, category: 'Indo-Chinese', subCategory: 'Noodles',
     isVeg: false, spiceLevel: 4, prepTime: '12 mins',
-    imagePath: 'Chicken_Chilli_Garlic_Noodles.jpg',
+    imagePath: 'Images/Food/Chinese/hakka_noodles.jpg',
+    rating: 4.6,
     icon: Icons.ramen_dining, color: Color(0xFFB71C1C),
   ),
 
@@ -377,7 +430,8 @@ const List<MenuItem> menuItems = [
     description: 'Potato-filled pastry with mint and tamarind chutneys.',
     price: 50, category: 'Quick Bites', subCategory: 'Snacks',
     isVeg: true, spiceLevel: 2, prepTime: '5 mins',
-    imagePath: 'Samosa_(2_pcs).jpg',
+    imagePath: 'Images/Food/Quick bites/samosa.jpg',
+    rating: 4.7,
     icon: Icons.fastfood, color: Color(0xFFFFCA28),
   ),
   MenuItem(
@@ -385,7 +439,8 @@ const List<MenuItem> menuItems = [
     description: 'Large battered and deep-fried stuffed chilies.',
     price: 60, category: 'Quick Bites', subCategory: 'Snacks',
     isVeg: true, spiceLevel: 5, prepTime: '8 mins',
-    imagePath: 'Mirchi_Bajji.jpg',
+    imagePath: 'Images/Food/Quick bites/mirchi_pakoda.jpg',
+    rating: 4.3,
     icon: Icons.fastfood, color: Color(0xFF66BB6A),
   ),
   MenuItem(
@@ -393,7 +448,8 @@ const List<MenuItem> menuItems = [
     description: 'Spicy deep-fried chicken bites with curry leaves.',
     price: 220, category: 'Quick Bites', subCategory: 'Snacks',
     isVeg: false, spiceLevel: 4, prepTime: '10 mins',
-    imagePath: 'Chicken_65.jpg',
+    imagePath: 'Images/Food/Quick bites/Chicken_65.jpg',
+    rating: 4.8,
     icon: Icons.fastfood, color: Color(0xFFFF5722),
   ),
 
@@ -403,7 +459,8 @@ const List<MenuItem> menuItems = [
     description: 'Fresh juice with black salt and mint.',
     price: 90, category: 'Beverages', subCategory: 'Cold',
     isVeg: true, spiceLevel: 0, prepTime: '5 mins',
-    imagePath: 'Watermelon_Mint_Cooler.jpg',
+    imagePath: 'Images/Food/Beverages/watermelon_mojito.jpg',
+    rating: 4.4,
     icon: Icons.local_drink, color: Color(0xFFEF9A9A),
   ),
   MenuItem(
@@ -411,7 +468,8 @@ const List<MenuItem> menuItems = [
     description: 'Apple, Beetroot, and Carrot blend.',
     price: 110, category: 'Beverages', subCategory: 'Cold',
     isVeg: true, spiceLevel: 0, prepTime: '8 mins',
-    imagePath: 'ABC_Juice.jpg',
+    imagePath: 'Images/Food/Beverages/ABC_Juice.jpg',
+    rating: 4.1,
     icon: Icons.local_drink, color: Color(0xFFCE93D8),
   ),
   MenuItem(
@@ -419,7 +477,8 @@ const List<MenuItem> menuItems = [
     description: '100% natural Valencia orange juice.',
     price: 70, category: 'Beverages', subCategory: 'Cold',
     isVeg: true, spiceLevel: 0, prepTime: '5 mins',
-    imagePath: 'Fresh_Orange_Juice.jpg',
+    imagePath: 'Images/Food/Beverages/Orange_Juice.jpg',
+    rating: 4.5,
     icon: Icons.local_drink, color: Color(0xFFFF9800),
   ),
   MenuItem(
@@ -427,7 +486,8 @@ const List<MenuItem> menuItems = [
     description: 'Blended coffee with milk and vanilla ice cream.',
     price: 130, category: 'Beverages', subCategory: 'Cold',
     isVeg: true, spiceLevel: 0, prepTime: '7 mins',
-    imagePath: 'Classic_Cold_Coffee.jpg',
+    imagePath: 'Images/Food/Beverages/cold coffee.jpg',
+    rating: 4.6,
     icon: Icons.local_cafe, color: Color(0xFF795548),
   ),
   MenuItem(
@@ -435,16 +495,9 @@ const List<MenuItem> menuItems = [
     description: 'Refreshing cold green tea with honey and lemon.',
     price: 70, category: 'Beverages', subCategory: 'Cold',
     isVeg: true, spiceLevel: 0, prepTime: '3 mins',
-    imagePath: 'Iced_Green_Tea.jpg',
+    imagePath: 'Images/Food/Beverages/green_tea.jpg',
+    rating: 4.2,
     icon: Icons.local_drink, color: Color(0xFF81C784),
-  ),
-  MenuItem(
-    id: 'BEV_013', name: 'Lychee Sparkler',
-    description: 'Lychee juice topped with soda and lime.',
-    price: 95, category: 'Beverages', subCategory: 'Cold',
-    isVeg: true, spiceLevel: 0, prepTime: '5 mins',
-    imagePath: 'Lychee_Sparkler.jpg',
-    icon: Icons.local_drink, color: Color(0xFFFF80AB),
   ),
 
   // ── Beverages › Mocktail ──────────────────────────────────────────────────
@@ -453,16 +506,9 @@ const List<MenuItem> menuItems = [
     description: 'Guava juice with a chili-rimmed glass.',
     price: 110, category: 'Beverages', subCategory: 'Mocktail',
     isVeg: true, spiceLevel: 2, prepTime: '5 mins',
-    imagePath: 'Spicy_Guava_Mocktail.jpg',
+    imagePath: 'Images/Food/Beverages/lime_soda.jpg',
+    rating: 4.0,
     icon: Icons.local_bar, color: Color(0xFFF48FB1),
-  ),
-  MenuItem(
-    id: 'BEV_005', name: 'Blue Lagoon',
-    description: 'Citrus-based blue curacao syrup with lemon-lime soda.',
-    price: 110, category: 'Beverages', subCategory: 'Mocktail',
-    isVeg: true, spiceLevel: 0, prepTime: '5 mins',
-    imagePath: 'Blue_Lagoon.jpg',
-    icon: Icons.local_bar, color: Color(0xFF42A5F5),
   ),
 
   // ── Beverages › Hot ───────────────────────────────────────────────────────
@@ -471,7 +517,8 @@ const List<MenuItem> menuItems = [
     description: 'Strong brewed tea with ginger, cardamom, and cloves.',
     price: 25, category: 'Beverages', subCategory: 'Hot',
     isVeg: true, spiceLevel: 1, prepTime: '5 mins',
-    imagePath: 'Masala_Chai.jpg',
+    imagePath: 'Images/Food/Beverages/chai.jpg',
+    rating: 4.8,
     icon: Icons.coffee, color: Color(0xFFFF8F00),
   ),
   MenuItem(
@@ -479,7 +526,8 @@ const List<MenuItem> menuItems = [
     description: 'Traditional South Indian decoction with frothed milk.',
     price: 30, category: 'Beverages', subCategory: 'Hot',
     isVeg: true, spiceLevel: 0, prepTime: '5 mins',
-    imagePath: 'Filter_Kaapi.jpg',
+    imagePath: 'Images/Food/Beverages/filter_coffee.jpg',
+    rating: 4.7,
     icon: Icons.coffee, color: Color(0xFF6D4C41),
   ),
   MenuItem(
@@ -487,7 +535,8 @@ const List<MenuItem> menuItems = [
     description: 'The classic Indian Adrak-Elaichi chai.',
     price: 30, category: 'Beverages', subCategory: 'Hot',
     isVeg: true, spiceLevel: 1, prepTime: '5 mins',
-    imagePath: 'Ginger_Cardamom_Tea.jpg',
+    imagePath: 'Images/Food/Beverages/chai.jpg',
+    rating: 4.5,
     icon: Icons.coffee, color: Color(0xFFFFB74D),
   ),
   MenuItem(
@@ -495,7 +544,8 @@ const List<MenuItem> menuItems = [
     description: 'Light black tea infused with fresh lemon and honey.',
     price: 40, category: 'Beverages', subCategory: 'Hot',
     isVeg: true, spiceLevel: 0, prepTime: '3 mins',
-    imagePath: 'Lemon_Honey_Tea.jpg',
+    imagePath: 'Images/Food/Beverages/lemon_tea.jpg',
+    rating: 4.2,
     icon: Icons.coffee, color: Color(0xFFFFEE58),
   ),
   MenuItem(
@@ -503,7 +553,8 @@ const List<MenuItem> menuItems = [
     description: 'Fragrant hot oriental tea served without milk.',
     price: 60, category: 'Beverages', subCategory: 'Hot',
     isVeg: true, spiceLevel: 0, prepTime: '5 mins',
-    imagePath: 'Jasmine_Tea.jpg',
+    imagePath: 'Images/Food/Beverages/green_tea.jpg',
+    rating: 4.3,
     icon: Icons.coffee, color: Color(0xFFE1BEE7),
   ),
   MenuItem(
@@ -511,7 +562,8 @@ const List<MenuItem> menuItems = [
     description: 'Intense, concentrated coffee for a quick caffeine kick.',
     price: 60, category: 'Beverages', subCategory: 'Hot',
     isVeg: true, spiceLevel: 0, prepTime: '2 mins',
-    imagePath: 'Espresso_Shot.jpg',
+    imagePath: 'Images/Food/Beverages/Espresso.jpg',
+    rating: 4.5,
     icon: Icons.coffee, color: Color(0xFF4E342E),
   ),
   MenuItem(
@@ -519,7 +571,8 @@ const List<MenuItem> menuItems = [
     description: 'Warm malt-based chocolate milk drink.',
     price: 50, category: 'Beverages', subCategory: 'Hot',
     isVeg: true, spiceLevel: 0, prepTime: '5 mins',
-    imagePath: 'Bournvita.jpg',
+    imagePath: 'Images/Food/Beverages/bournvita.jpg',
+    rating: 4.0,
     icon: Icons.coffee, color: Color(0xFF5D4037),
   ),
   MenuItem(
@@ -527,7 +580,8 @@ const List<MenuItem> menuItems = [
     description: 'Warm malt-based milk drink.',
     price: 50, category: 'Beverages', subCategory: 'Hot',
     isVeg: true, spiceLevel: 0, prepTime: '5 mins',
-    imagePath: 'Horlicks.jpg',
+    imagePath: 'Images/Food/Beverages/horlicks.jpg',
+    rating: 4.0,
     icon: Icons.coffee, color: Color(0xFF8D6E63),
   ),
 ];

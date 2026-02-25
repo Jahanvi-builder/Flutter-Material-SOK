@@ -164,15 +164,26 @@ class _CartItemTile extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            // Placeholder thumbnail
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: item.color.withAlpha(50),
-                borderRadius: BorderRadius.circular(10),
+            // Dish thumbnail
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 56,
+                height: 56,
+                child: item.imagePath.isNotEmpty
+                    ? Image.asset(
+                        item.imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => ColoredBox(
+                          color: item.color.withAlpha(50),
+                          child: Icon(item.icon, color: item.color, size: 28),
+                        ),
+                      )
+                    : ColoredBox(
+                        color: item.color.withAlpha(50),
+                        child: Icon(item.icon, color: item.color, size: 28),
+                      ),
               ),
-              child: Icon(item.icon, color: item.color, size: 28),
             ),
             const SizedBox(width: 12),
 
