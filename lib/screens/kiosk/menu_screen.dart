@@ -17,12 +17,16 @@ class MenuScreen extends StatefulWidget {
   State<MenuScreen> createState() => _MenuScreenState();
 }
 
+
 class _MenuScreenState extends State<MenuScreen> {
-  String _selectedCategory = 'All';
+  int _selectedIndex = 0;
+  bool _useSideNav = false;
+  bool _railExtended = true;
   String _searchQuery = '';
-  bool _searchVisible = false;
   final _searchController = TextEditingController();
   String? _phoneNumber;
+
+  String get _selectedCategory => menuCategories[_selectedIndex];
 
   @override
   void initState() {
@@ -61,10 +65,47 @@ class _MenuScreenState extends State<MenuScreen> {
       appBar: AppBar(
         title: const Text('Tasty Bites'),
         centerTitle: false,
+        titleSpacing: 4,
         backgroundColor: Theme.of(context).colorScheme.surface,
-        scrolledUnderElevation: 2,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         actions: [
+          SizedBox(
+            width: 240,
+            height: 40,
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search menu…',
+                prefixIcon: const Icon(Icons.search, size: 18),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close, size: 16),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceContainer,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(32),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: (v) => setState(() => _searchQuery = v),
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: Icon(_useSideNav ? Icons.view_day_outlined : Icons.view_sidebar_outlined),
+            tooltip: _useSideNav ? 'Top navigation' : 'Side navigation',
+            onPressed: () => setState(() => _useSideNav = !_useSideNav),
+          ),
           if (_phoneNumber != null)
             Padding(
               padding: const EdgeInsets.only(right: 16),
@@ -83,227 +124,374 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      body: Builder(
+        builder: (context) {
+          final cartFab = ListenableBuilder(
+            listenable: widget.cart,
+            builder: (context, _) {
+              if (widget.cart.isEmpty) return const SizedBox.shrink();
 
-      body: Column(
-        children: [
-          // Category chips
-          SizedBox(
-            height: 80,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              scrollDirection: Axis.horizontal,
-              itemCount: menuCategories.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, i) {
-                final cat = menuCategories[i];
-                final selected = cat == _selectedCategory;
+              // Up to 3 item images + optional +N badge
+              final allCartItems = widget.cart.items;
+              final cartItems = allCartItems.take(3).toList();
+              final extraCount = allCartItems.length - 3;
+              final imgSize = 40.0;
+              final overlap = 20.0;
+              final step = imgSize - overlap;
+              final totalSlots = cartItems.length + (extraCount > 0 ? 1 : 0);
 
-                Widget chipLabel;
-                if (cat == 'All') {
-                  chipLabel = Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ClipOval(
-                        child: SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: ColoredBox(
-                            color: Theme.of(context).colorScheme.primaryContainer,
-                            child: Center(
-                              child: Icon(Icons.apps_rounded, size: 16,
-                                  color: Theme.of(context).colorScheme.onPrimaryContainer),
-                            ),
+              Widget buildCircle(Widget child) => Container(
+                width: imgSize,
+                height: imgSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                child: ClipOval(child: child),
+              );
+
+              final slots = [
+                ...cartItems.asMap().entries.map((e) {
+                  final item = e.value.item;
+                  return buildCircle(
+                    item.imagePath.isNotEmpty
+                        ? Image.asset(item.imagePath, fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => ColoredBox(
+                              color: item.color.withAlpha(50),
+                              child: Icon(item.icon, size: 12, color: item.color),
+                            ))
+                        : ColoredBox(
+                            color: item.color.withAlpha(50),
+                            child: Icon(item.icon, size: 12, color: item.color),
+                          ),
+                  );
+                }),
+                if (extraCount > 0)
+                  buildCircle(
+                    ColoredBox(
+                      color: Colors.white,
+                      child: Center(
+                        child: Text(
+                          '+$extraCount',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Text('All', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                    ],
-                  );
-                } else {
-                  final leader = menuItems.firstWhere(
-                    (item) => item.category == cat,
-                    orElse: () => menuItems.first,
-                  );
-                  chipLabel = Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ClipOval(
-                        child: SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: leader.imagePath.isNotEmpty
-                              ? Image.asset(
-                                  leader.imagePath,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => ColoredBox(
-                                    color: leader.color.withAlpha(50),
-                                    child: Center(child: Icon(leader.icon, size: 14, color: leader.color)),
-                                  ),
-                                )
-                              : ColoredBox(
-                                  color: leader.color.withAlpha(50),
-                                  child: Center(child: Icon(leader.icon, size: 14, color: leader.color)),
-                                ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(cat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                    ],
-                  );
-                }
-
-                return FilterChip(
-                  label: chipLabel,
-                  selected: selected,
-                  onSelected: (_) => setState(() => _selectedCategory = cat),
-                  showCheckmark: false,
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
-                );
-              },
-            ),
-          ),
-
-          // Collapsible search bar
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            child: _searchVisible
-                ? Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                    child: TextField(
-                      controller: _searchController,
-                      autofocus: true,
-                      decoration: InputDecoration(
-                        hintText: 'Search menu…',
-                        prefixIcon: const Icon(Icons.search, size: 18),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.close, size: 16),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() => _searchQuery = '');
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(32),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      onChanged: (v) => setState(() => _searchQuery = v),
                     ),
-                  )
-                : const SizedBox.shrink(),
-          ),
+                  ),
+              ];
 
-          const Divider(height: 1),
+              final imagesWidget = SizedBox(
+                width: imgSize + (totalSlots - 1) * step,
+                height: imgSize,
+                child: Stack(
+                  children: slots.asMap().entries.map((e) =>
+                    Positioned(left: e.key * step, child: e.value),
+                  ).toList(),
+                ),
+              );
 
-          // Responsive menu grid
-          Expanded(
+              return Transform.scale(
+                scale: 1.2,
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: FloatingActionButton.extended(
+                  heroTag: 'cart_fab',
+                  shape: const StadiumBorder(),
+                  extendedPadding: const EdgeInsets.fromLTRB(8, 16, 20, 16),
+                  onPressed: () {
+                    SoundService.playTap();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => CartScreen(cart: widget.cart)),
+                    );
+                  },
+                  label: Row(
+                    children: [
+                      imagesWidget,
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Go to Cart',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onPrimary.withAlpha(40),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '₹${widget.cart.total.round()}',
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ));
+            },
+          );
+
+          final menuGrid = Expanded(
             child: ColoredBox(
               color: Theme.of(context).colorScheme.surfaceContainerLow,
               child: LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                final columns = switch (width) {
-                  < 600 => 1,
-                  < 900 => 2,
-                  _ => 3,
-                };
-                // Card width → 4:3 image height + fixed text/button area (~160px)
-                const hSpacing = 12.0;
-                const hPadding = 32.0; // 16 left + 16 right
-                final cardWidth = (width - hPadding - (columns - 1) * hSpacing) / columns;
-                final cardHeight = cardWidth * 3 / 4 + 190;
-                return GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns,
-                    crossAxisSpacing: hSpacing,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: cardWidth / cardHeight,
-                  ),
-                  itemCount: _filtered.length,
-                  itemBuilder: (context, i) => _MenuItemCard(
-                    item: _filtered[i],
-                    cart: widget.cart,
-                    onTap: () => _openDetail(_filtered[i]),
-                  ),
-                );
-              },
-            ),
-            ),
-          ),
-        ],
-      ),
-
-      floatingActionButton: ListenableBuilder(
-        listenable: widget.cart,
-        builder: (context, _) {
-          final searchFab = FloatingActionButton(
-            heroTag: 'search_fab',
-            onPressed: () {
-              SoundService.playTap();
-              setState(() {
-                _searchVisible = !_searchVisible;
-                if (!_searchVisible) {
-                  _searchController.clear();
-                  _searchQuery = '';
-                }
-              });
-            },
-            child: Icon(
-              _searchVisible ? Icons.search_off_rounded : Icons.search_rounded,
+                builder: (context, constraints) {
+                  final width = constraints.maxWidth;
+                  final columns = switch (width) {
+                    < 600 => 1,
+                    < 900 => 2,
+                    _ => 3,
+                  };
+                  // Card width → 4:3 image height + fixed text/button area (~160px)
+                  const hSpacing = 12.0;
+                  const hPadding = 32.0; // 16 left + 16 right
+                  final cardWidth = (width - hPadding - (columns - 1) * hSpacing) / columns;
+                  final cardHeight = cardWidth * 3 / 4 + 190;
+                  return GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
+                      crossAxisSpacing: hSpacing,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: cardWidth / cardHeight,
+                    ),
+                    itemCount: _filtered.length,
+                    itemBuilder: (context, i) => _MenuItemCard(
+                      item: _filtered[i],
+                      cart: widget.cart,
+                      onTap: () => _openDetail(_filtered[i]),
+                    ),
+                  );
+                },
+              ),
             ),
           );
 
-          if (widget.cart.isEmpty) return searchFab;
+          if (_useSideNav) {
+            final cs = Theme.of(context).colorScheme;
+            final tt = Theme.of(context).textTheme;
 
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FloatingActionButton.extended(
-                heroTag: 'cart_fab',
-                onPressed: () {
-                  SoundService.playTap();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => CartScreen(cart: widget.cart)),
-                  );
-                },
-                icon: Badge(
-                  label: Text('${widget.cart.itemCount}'),
-                  child: const Icon(Icons.shopping_cart_outlined),
+            Widget buildCatIcon(String cat) {
+              if (cat == 'All') {
+                return ClipOval(
+                  child: SizedBox(
+                    width: 40, height: 40,
+                    child: ColoredBox(
+                      color: cs.surfaceContainer,
+                      child: Center(child: Icon(Icons.apps_rounded, size: 20, color: cs.onSurface)),
+                    ),
+                  ),
+                );
+              }
+              final leader = menuItems.firstWhere(
+                (item) => item.category == cat,
+                orElse: () => menuItems.first,
+              );
+              return ClipOval(
+                child: SizedBox(
+                  width: 40, height: 40,
+                  child: leader.imagePath.isNotEmpty
+                      ? Image.asset(
+                          leader.imagePath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => ColoredBox(
+                            color: leader.color.withAlpha(50),
+                            child: Center(child: Icon(leader.icon, size: 18, color: leader.color)),
+                          ),
+                        )
+                      : ColoredBox(
+                          color: leader.color.withAlpha(50),
+                          child: Center(child: Icon(leader.icon, size: 18, color: leader.color)),
+                        ),
                 ),
-                label: Row(
+              );
+            }
+
+            final customRail = AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              width: _railExtended ? 220.0 : 72.0,
+              color: cs.surface,
+              clipBehavior: Clip.hardEdge,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 12, 4),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        tooltip: _railExtended ? 'Collapse' : 'Expand',
+                        icon: Icon(_railExtended ? Icons.menu_open_rounded : Icons.menu_rounded),
+                        onPressed: () => setState(() => _railExtended = !_railExtended),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      children: menuCategories.asMap().entries.map((e) {
+                        final i = e.key;
+                        final cat = e.value;
+                        final selected = i == _selectedIndex;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(32),
+                            onTap: () { SoundService.playTap(); setState(() => _selectedIndex = i); },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              decoration: BoxDecoration(
+                                color: selected ? cs.surfaceContainerHigh : Colors.transparent,
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                              padding: const EdgeInsets.all(8),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  buildCatIcon(cat),
+                                  Expanded(
+                                    child: AnimatedOpacity(
+                                      opacity: _railExtended ? 1.0 : 0.0,
+                                      duration: const Duration(milliseconds: 150),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 12),
+                                        child: Text(
+                                          cat,
+                                          style: tt.bodyLarge?.copyWith(
+                                            fontSize: 15,
+                                            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                                            color: selected ? cs.onSurface : cs.onSurfaceVariant,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            );
+
+            return Row(
+              children: [
+                customRail,
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(child: Column(children: [menuGrid])),
+                      Positioned(bottom: 0, left: 0, right: 0, child: Center(child: cartFab)),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+
+          // Top chip navigation (default)
+          return Column(
+            children: [
+              // Category chips
+              SizedBox(
+                height: 80,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: menuCategories.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (context, i) {
+                    final cat = menuCategories[i];
+                    final selected = cat == _selectedCategory;
+
+                    Widget chipLabel;
+                    if (cat == 'All') {
+                      chipLabel = Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ClipOval(
+                            child: SizedBox(
+                              width: 32,
+                              height: 32,
+                              child: ColoredBox(
+                                color: Theme.of(context).colorScheme.primaryContainer,
+                                child: Center(
+                                  child: Icon(Icons.apps_rounded, size: 16,
+                                      color: Theme.of(context).colorScheme.onPrimaryContainer),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('All', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        ],
+                      );
+                    } else {
+                      final leader = menuItems.firstWhere(
+                        (item) => item.category == cat,
+                        orElse: () => menuItems.first,
+                      );
+                      chipLabel = Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ClipOval(
+                            child: SizedBox(
+                              width: 32,
+                              height: 32,
+                              child: leader.imagePath.isNotEmpty
+                                  ? Image.asset(
+                                      leader.imagePath,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => ColoredBox(
+                                        color: leader.color.withAlpha(50),
+                                        child: Center(child: Icon(leader.icon, size: 14, color: leader.color)),
+                                      ),
+                                    )
+                                  : ColoredBox(
+                                      color: leader.color.withAlpha(50),
+                                      child: Center(child: Icon(leader.icon, size: 14, color: leader.color)),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(cat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        ],
+                      );
+                    }
+
+                    return FilterChip(
+                      label: chipLabel,
+                      selected: selected,
+                      onSelected: (_) => setState(() => _selectedIndex = menuCategories.indexOf(cat)),
+                      showCheckmark: false,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+                    );
+                  },
+                ),
+              ),
+
+              Expanded(
+                child: Stack(
                   children: [
-                    const Text(
-                      'Go to Cart',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.onPrimary.withAlpha(40),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '₹${widget.cart.total.round()}',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                      ),
-                    ),
+                    Column(children: [menuGrid]),
+                    Positioned(bottom: 0, left: 0, right: 0, child: Center(child: cartFab)),
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
-              searchFab,
             ],
           );
         },
