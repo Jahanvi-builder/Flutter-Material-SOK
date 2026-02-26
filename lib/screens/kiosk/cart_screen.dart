@@ -3,12 +3,27 @@ import 'package:flutter/material.dart';
 import '../../models/cart_controller.dart';
 import '../../models/cart_item.dart';
 import '../../services/sound_service.dart';
-import 'payment_screen.dart';
+import 'confirmation_screen.dart';
 
-class CartScreen extends StatelessWidget {
+enum _PaymentMethod { tapToPay, card, qr }
+
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key, required this.cart});
 
   final CartController cart;
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  _PaymentMethod _selected = _PaymentMethod.tapToPay;
+
+  static const _methods = [
+    (method: _PaymentMethod.tapToPay, icon: Icons.contactless_rounded,    label: 'Tap to Pay'),
+    (method: _PaymentMethod.card,     icon: Icons.credit_card_rounded,     label: 'Card'),
+    (method: _PaymentMethod.qr,       icon: Icons.qr_code_scanner_rounded, label: 'QR'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -18,22 +33,11 @@ class CartScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Order'),
-        actions: [
-          ListenableBuilder(
-            listenable: cart,
-            builder: (_, _) => cart.isEmpty
-                ? const SizedBox.shrink()
-                : TextButton(
-                    onPressed: () => _confirmClear(context),
-                    child: const Text('Clear all'),
-                  ),
-          ),
-        ],
       ),
       body: ListenableBuilder(
-        listenable: cart,
+        listenable: widget.cart,
         builder: (context, _) {
-          if (cart.isEmpty) {
+          if (widget.cart.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -46,6 +50,11 @@ class CartScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   FilledButton.tonal(
                     onPressed: () => Navigator.pop(context),
+                    style: FilledButton.styleFrom(
+                      fixedSize: const Size(200, 56),
+                      iconSize: 22,
+                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
                     child: const Text('Browse Menu'),
                   ),
                 ],
@@ -54,71 +63,119 @@ class CartScreen extends StatelessWidget {
           }
 
           return Center(
-            child: ConstrainedBox(
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
               child: Column(
-            children: [
-              // Items list
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: cart.items.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (context, i) => _CartItemTile(
-                    cartItem: cart.items[i],
-                    cart: cart,
+                children: [
+                  // Items list
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    itemCount: widget.cart.items.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (context, i) => _CartItemTile(
+                      cartItem: widget.cart.items[i],
+                      cart: widget.cart,
+                    ),
                   ),
-                ),
-              ),
 
-              // Order summary
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerLow,
-                  border: Border(top: BorderSide(color: cs.outlineVariant)),
-                ),
-                child: SafeArea(
-                  child: Column(
-                    children: [
-                      _SummaryRow('Subtotal', '₹${cart.subtotal.round()}', tt),
-                      const SizedBox(height: 6),
-                      _SummaryRow('GST (5%)', '₹${cart.tax.round()}', tt),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Divider(),
-                      ),
-                      _SummaryRow(
-                        'Total',
-                        '₹${cart.total.round()}',
-                        tt,
-                        bold: true,
-                        color: cs.primary,
-                      ),
-                      const SizedBox(height: 20),
-                      FilledButton.icon(
-                        onPressed: () {
-                          SoundService.playTap();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PaymentScreen(cart: cart),
+                  // Order summary + payment
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLow,
+                      border: Border(top: BorderSide(color: cs.outlineVariant)),
+                    ),
+                    child: SafeArea(
+                      child: Column(
+                        children: [
+                          _SummaryRow('Subtotal', '₹${widget.cart.subtotal.round()}', tt),
+                          if (widget.cart.discount > 0) ...[
+                            const SizedBox(height: 6),
+                            _SummaryRow(
+                              'Discount',
+                              '−₹${widget.cart.discount.round()}',
+                              tt,
+                              color: Colors.green.shade600,
                             ),
-                          );
-                        },
-                        icon: const Icon(Icons.payment),
-                        label: const Text('Proceed to Payment'),
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(52),
-                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
+                          ],
+                          const SizedBox(height: 6),
+                          _SummaryRow('GST (5%)', '₹${widget.cart.tax.round()}', tt),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Divider(),
+                          ),
+                          _SummaryRow(
+                            'Total',
+                            '₹${widget.cart.total.round()}',
+                            tt,
+                            bold: true,
+                            color: cs.primary,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Payment method selection
+                          SegmentedButton<_PaymentMethod>(
+                            style: SegmentedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(48),
+                              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                            ),
+                            segments: _methods.map((m) => ButtonSegment(
+                              value: m.method,
+                              icon: Icon(m.icon, size: 18),
+                              label: Text(m.label),
+                            )).toList(),
+                            selected: {_selected},
+                            onSelectionChanged: (v) => setState(() => _selected = v.first),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: FilledButton.tonal(
+                                  onPressed: () => _confirmClear(context),
+                                  style: FilledButton.styleFrom(
+                                    minimumSize: const Size.fromHeight(64),
+                                    textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                  ),
+                                  child: const Text('Clear Cart'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 2,
+                                child: FilledButton.icon(
+                                  onPressed: () {
+                                    SoundService.playTap();
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ConfirmationScreen(cart: widget.cart),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.check_rounded),
+                                  label: Text('Confirm · ₹${widget.cart.total.round()}'),
+                                  style: FilledButton.styleFrom(
+                                    minimumSize: const Size.fromHeight(64),
+                                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
             ),
           );
         },
@@ -140,7 +197,7 @@ class CartScreen extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () {
-              cart.clear();
+              widget.cart.clear();
               Navigator.pop(context); // close dialog
               Navigator.pop(context); // go back to menu
             },
@@ -212,10 +269,11 @@ class _CartItemTile extends StatelessWidget {
             // Quantity controls
             Row(
               children: [
-                IconButton.outlined(
+                IconButton(
                   icon: const Icon(Icons.remove, size: 16),
                   onPressed: () { SoundService.playTap(); cart.decrement(cartItem); },
                   style: IconButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
                     minimumSize: const Size(32, 32),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -228,10 +286,11 @@ class _CartItemTile extends StatelessWidget {
                     style: tt.titleSmall,
                   ),
                 ),
-                IconButton.filledTonal(
+                IconButton(
                   icon: const Icon(Icons.add, size: 16),
                   onPressed: () { SoundService.playTap(); cart.increment(cartItem); },
                   style: IconButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
                     minimumSize: const Size(32, 32),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),

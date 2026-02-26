@@ -15,6 +15,8 @@ class CartController extends ChangeNotifier {
   bool get isEmpty => _items.isEmpty;
   int get itemCount => _items.fold(0, (sum, e) => sum + e.quantity);
   double get subtotal => _items.fold(0.0, (sum, e) => sum + e.subtotal);
+  double get discount => _items.fold(0.0, (sum, e) => sum +
+      (e.item.originalPrice != null ? (e.item.originalPrice! - e.item.price) * e.quantity : 0.0));
   double get tax => subtotal * 0.05;
   double get total => subtotal + tax;
 

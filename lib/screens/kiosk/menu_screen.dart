@@ -20,7 +20,7 @@ class MenuScreen extends StatefulWidget {
 
 class _MenuScreenState extends State<MenuScreen> {
   int _selectedIndex = 0;
-  bool _useSideNav = false;
+  bool _useSideNav = true;
   bool _railExtended = true;
   String _searchQuery = '';
   final _searchController = TextEditingController();
@@ -133,8 +133,8 @@ class _MenuScreenState extends State<MenuScreen> {
 
               // Up to 3 item images + optional +N badge
               final allCartItems = widget.cart.items;
-              final cartItems = allCartItems.take(3).toList();
-              final extraCount = allCartItems.length - 3;
+              final cartItems = allCartItems.take(2).toList();
+              final extraCount = allCartItems.length - 2;
               final imgSize = 40.0;
               final overlap = 20.0;
               final step = imgSize - overlap;
@@ -215,21 +215,11 @@ class _MenuScreenState extends State<MenuScreen> {
                       imagesWidget,
                       const SizedBox(width: 12),
                       const Text(
-                        'Go to Cart',
+                        'View Cart',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                       ),
-                      const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onPrimary.withAlpha(40),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '₹${widget.cart.total.round()}',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                        ),
-                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.chevron_right_rounded, size: 22),
                     ],
                   ),
                 ),
