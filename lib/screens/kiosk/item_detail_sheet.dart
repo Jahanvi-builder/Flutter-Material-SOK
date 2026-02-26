@@ -14,7 +14,7 @@ Color _starColor(double rating) {
 // Shared chip style matching the menu category chips
 const _chipShape = StadiumBorder();
 const _chipPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 12);
-const _chipLabelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
+const _chipLabelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w500);
 const _chipSpacing = 8.0;
 
 /// Call this instead of showModalBottomSheet/showDialog directly.
@@ -144,15 +144,44 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                     Expanded(
                       child: Text(
                         item.name,
-                        style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                        style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w500),
                       ),
                     ),
-                    Text(
-                      '₹${item.price.round()}',
-                      style: tt.headlineSmall?.copyWith(
-                        color: cs.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (item.originalPrice != null) ...[
+                          Text(
+                            '₹${item.originalPrice!.round()}',
+                            style: tt.bodyMedium?.copyWith(
+                              color: cs.onSurfaceVariant.withAlpha(120),
+                              decoration: TextDecoration.lineThrough,
+                              decorationColor: cs.onSurfaceVariant.withAlpha(120),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Text.rich(
+                          TextSpan(children: [
+                            TextSpan(
+                              text: '₹',
+                              style: tt.titleMedium?.copyWith(
+                                color: cs.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            TextSpan(
+                              text: '${item.price.round()}',
+                              style: tt.headlineSmall?.copyWith(
+                                color: cs.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ]),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -168,12 +197,12 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                       style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant),
                     ),
                     const SizedBox(width: 12),
-                    Icon(Icons.star_rounded, size: 16, color: _starColor(item.rating)),
-                    const SizedBox(width: 3),
                     Text(
                       item.rating.toStringAsFixed(1),
-                      style: tt.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+                      style: tt.labelMedium?.copyWith(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.star_rounded, size: 20, color: _starColor(item.rating)),
                     const Spacer(),
                     Icon(Icons.schedule_rounded, size: 14, color: cs.onSurfaceVariant),
                     const SizedBox(width: 4),
@@ -205,7 +234,7 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                 // Sizes
                 if (item.sizes.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Size', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  Text('Size', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: _chipSpacing,
@@ -226,7 +255,7 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                 // Add-ons
                 if (item.addOns.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Add-ons', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  Text('Add-ons', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: _chipSpacing,
@@ -306,9 +335,13 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                         },
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 20),
-                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'GoogleSansFlex', fontVariations: [FontVariation('ROND', 100.0)]),
                         ),
-                        child: Text('Add to Cart  ·  ₹${_itemTotal.round()}'),
+                        child: Text.rich(TextSpan(children: [
+                          const TextSpan(text: 'Add to Cart  ·  '),
+                          const TextSpan(text: '₹', style: TextStyle(fontSize: 13)),
+                          TextSpan(text: '${_itemTotal.round()}'),
+                        ])),
                       ),
                     ),
                   ],

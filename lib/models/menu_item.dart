@@ -16,6 +16,11 @@ class MenuItem {
   final List<String> sizes;
   final List<String> addOns;
   final double rating;
+  final double? originalPrice;
+
+  int? get discountPercent => originalPrice == null
+      ? null
+      : ((originalPrice! - price) / originalPrice! * 100).round();
 
   const MenuItem({
     required this.id,
@@ -33,5 +38,6 @@ class MenuItem {
     this.sizes = const [],
     this.addOns = const [],
     this.rating = 4.0,
+    this.originalPrice,
   });
 }

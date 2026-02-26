@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../models/cart_controller.dart';
 import '../../theme/app_theme.dart';
 import '../../services/sound_service.dart';
-import 'menu_screen.dart';
 
-class PhoneScreen extends StatefulWidget {
-  const PhoneScreen({super.key, required this.cart});
-
-  final CartController cart;
-
-  @override
-  State<PhoneScreen> createState() => _PhoneScreenState();
+/// Shows the phone + OTP dialog over whatever screen is currently displayed.
+/// Returns the verified phone number string, or null if the user skipped.
+Future<String?> showPhoneOtpDialog(BuildContext context) {
+  return showDialog<String?>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const _PhoneOtpDialog(),
+  );
 }
 
-class _PhoneScreenState extends State<PhoneScreen> {
+class _PhoneOtpDialog extends StatefulWidget {
+  const _PhoneOtpDialog();
+
+  @override
+  State<_PhoneOtpDialog> createState() => _PhoneOtpDialogState();
+}
+
+class _PhoneOtpDialogState extends State<_PhoneOtpDialog> {
   final _phoneController = TextEditingController();
   final _phoneFocus = FocusNode();
   bool get _hasNumber => _phoneController.text.trim().length == 10;
@@ -36,23 +42,12 @@ class _PhoneScreenState extends State<PhoneScreen> {
 
   void _verify() {
     SoundService.playTap();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MenuScreen(
-          cart: widget.cart,
-          phoneNumber: _phoneController.text.trim(),
-        ),
-      ),
-    );
+    Navigator.pop(context, _phoneController.text.trim());
   }
 
   void _skip() {
     SoundService.playTap();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => MenuScreen(cart: widget.cart)),
-    );
+    Navigator.pop(context, null);
   }
 
   @override
@@ -79,50 +74,50 @@ class _PhoneScreenState extends State<PhoneScreen> {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final isWide = MediaQuery.sizeOf(context).width >= 700;
 
-    return Scaffold(
-      body: Container(
-        color: AppTheme.brandGreen,
-        child: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _showOtp
-                      ? _OtpContent(
-                          key: const ValueKey('otp'),
-                          phone: _phoneController.text.trim(),
-                          controllers: _otpControllers,
-                          focusNodes: _otpFocusNodes,
-                          otpComplete: _otpComplete,
-                          onVerify: _verify,
-                          onChangeNumber: () {
-                            SoundService.playTap();
-                            setState(() {
-                              _showOtp = false;
-                              for (final c in _otpControllers) c.clear();
-                            });
-                            WidgetsBinding.instance.addPostFrameCallback(
-                              (_) => _phoneFocus.requestFocus(),
-                            );
-                          },
-                          tt: tt,
-                        )
-                      : _PhoneContent(
-                          key: const ValueKey('phone'),
-                          controller: _phoneController,
-                          focusNode: _phoneFocus,
-                          hasNumber: _hasNumber,
-                          onContinue: _goToOtp,
-                          onSkip: _skip,
-                          tt: tt,
-                        ),
-                ),
-              ),
-            ),
+    return Dialog(
+      backgroundColor: AppTheme.brandGreen,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isWide ? 80 : 24,
+        vertical: 40,
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: Padding(
+          padding: const EdgeInsets.all(36),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _showOtp
+                ? _OtpContent(
+                    key: const ValueKey('otp'),
+                    phone: _phoneController.text.trim(),
+                    controllers: _otpControllers,
+                    focusNodes: _otpFocusNodes,
+                    otpComplete: _otpComplete,
+                    onVerify: _verify,
+                    onChangeNumber: () {
+                      SoundService.playTap();
+                      setState(() {
+                        _showOtp = false;
+                        for (final c in _otpControllers) c.clear();
+                      });
+                      WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => _phoneFocus.requestFocus(),
+                      );
+                    },
+                    tt: tt,
+                  )
+                : _PhoneContent(
+                    key: const ValueKey('phone'),
+                    controller: _phoneController,
+                    focusNode: _phoneFocus,
+                    hasNumber: _hasNumber,
+                    onContinue: _goToOtp,
+                    onSkip: _skip,
+                    tt: tt,
+                  ),
           ),
         ),
       ),
@@ -130,7 +125,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
   }
 }
 
-// ── Phone entry ──────────────────────────────────────────────────────────────
+// ── Phone entry ───────────────────────────────────────────────────────────────
 
 class _PhoneContent extends StatelessWidget {
   const _PhoneContent({
@@ -153,14 +148,14 @@ class _PhoneContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Login to see\ngreat offers',
           style: tt.displaySmall?.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w500,
             height: 1.15,
           ),
         ),
@@ -181,7 +176,7 @@ class _PhoneContent extends StatelessWidget {
                   foregroundColor: Colors.white70,
                   side: const BorderSide(color: Colors.white30, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 22),
-                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -200,7 +195,7 @@ class _PhoneContent extends StatelessWidget {
                   disabledBackgroundColor: Colors.white12,
                   disabledForegroundColor: Colors.white30,
                   padding: const EdgeInsets.symmetric(vertical: 22),
-                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -237,9 +232,7 @@ class _PhoneField extends StatelessWidget {
             color: Colors.white.withAlpha(20),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: focusNode.hasFocus
-                  ? AppTheme.brandMint
-                  : Colors.white24,
+              color: focusNode.hasFocus ? AppTheme.brandMint : Colors.white24,
               width: 1.5,
             ),
           ),
@@ -251,7 +244,7 @@ class _PhoneField extends StatelessWidget {
                   '+91',
                   style: tt.titleLarge?.copyWith(
                     color: Colors.white70,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -325,14 +318,14 @@ class _OtpContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Enter OTP',
           style: tt.displaySmall?.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 12),
@@ -345,7 +338,7 @@ class _OtpContent extends StatelessWidget {
                 text: '+91 ${phone.substring(0, 5)} ${phone.substring(5)}',
                 style: const TextStyle(
                   color: AppTheme.brandMint,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -354,14 +347,17 @@ class _OtpContent extends StatelessWidget {
         const SizedBox(height: 40),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(6, (i) => _OtpBox(
-            controller: controllers[i],
-            focusNode: focusNodes[i],
-            nextFocus: i < 5 ? focusNodes[i + 1] : null,
-            prevFocus: i > 0 ? focusNodes[i - 1] : null,
-            prevController: i > 0 ? controllers[i - 1] : null,
-            tt: tt,
-          )),
+          children: List.generate(
+            6,
+            (i) => _OtpBox(
+              controller: controllers[i],
+              focusNode: focusNodes[i],
+              nextFocus: i < 5 ? focusNodes[i + 1] : null,
+              prevFocus: i > 0 ? focusNodes[i - 1] : null,
+              prevController: i > 0 ? controllers[i - 1] : null,
+              tt: tt,
+            ),
+          ),
         ),
         const SizedBox(height: 32),
         Row(
@@ -373,7 +369,7 @@ class _OtpContent extends StatelessWidget {
                   foregroundColor: Colors.white70,
                   side: const BorderSide(color: Colors.white30, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 22),
-                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -392,7 +388,7 @@ class _OtpContent extends StatelessWidget {
                   disabledBackgroundColor: Colors.white12,
                   disabledForegroundColor: Colors.white30,
                   padding: const EdgeInsets.symmetric(vertical: 22),
-                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -436,9 +432,7 @@ class _OtpBox extends StatelessWidget {
             color: Colors.white.withAlpha(20),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: focusNode.hasFocus
-                  ? AppTheme.brandMint
-                  : Colors.white24,
+              color: focusNode.hasFocus ? AppTheme.brandMint : Colors.white24,
               width: 1.5,
             ),
           ),
@@ -451,7 +445,7 @@ class _OtpBox extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             style: tt.headlineMedium?.copyWith(
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w500,
             ),
             decoration: const InputDecoration(
               border: InputBorder.none,

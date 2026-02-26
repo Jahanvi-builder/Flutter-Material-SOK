@@ -6,12 +6,12 @@ import '../../models/menu_item.dart';
 import '../../services/sound_service.dart';
 import 'cart_screen.dart';
 import 'item_detail_sheet.dart';
+import 'phone_screen.dart';
 
 class MenuScreen extends StatefulWidget {
-  const MenuScreen({super.key, required this.cart, this.phoneNumber});
+  const MenuScreen({super.key, required this.cart});
 
   final CartController cart;
-  final String? phoneNumber;
 
   @override
   State<MenuScreen> createState() => _MenuScreenState();
@@ -22,6 +22,16 @@ class _MenuScreenState extends State<MenuScreen> {
   String _searchQuery = '';
   bool _searchVisible = false;
   final _searchController = TextEditingController();
+  String? _phoneNumber;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final phone = await showPhoneOtpDialog(context);
+      if (mounted) setState(() => _phoneNumber = phone);
+    });
+  }
 
   List<MenuItem> get _filtered {
     final byCategory = _selectedCategory == 'All'
@@ -51,12 +61,15 @@ class _MenuScreenState extends State<MenuScreen> {
       appBar: AppBar(
         title: const Text('Tasty Bites'),
         centerTitle: false,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        scrolledUnderElevation: 2,
+        surfaceTintColor: Colors.transparent,
         actions: [
-          if (widget.phoneNumber != null)
+          if (_phoneNumber != null)
             Padding(
               padding: const EdgeInsets.only(right: 16),
               child: Tooltip(
-                message: '+91 ${widget.phoneNumber}',
+                message: '+91 $_phoneNumber',
                 child: CircleAvatar(
                   radius: 20,
                   backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -88,7 +101,26 @@ class _MenuScreenState extends State<MenuScreen> {
 
                 Widget chipLabel;
                 if (cat == 'All') {
-                  chipLabel = Text(cat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600));
+                  chipLabel = Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipOval(
+                        child: SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: ColoredBox(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            child: Center(
+                              child: Icon(Icons.apps_rounded, size: 16,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text('All', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    ],
+                  );
                 } else {
                   final leader = menuItems.firstWhere(
                     (item) => item.category == cat,
@@ -117,7 +149,7 @@ class _MenuScreenState extends State<MenuScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(cat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      Text(cat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                     ],
                   );
                 }
@@ -174,19 +206,21 @@ class _MenuScreenState extends State<MenuScreen> {
 
           // Responsive menu grid
           Expanded(
-            child: LayoutBuilder(
+            child: ColoredBox(
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: LayoutBuilder(
               builder: (context, constraints) {
                 final width = constraints.maxWidth;
                 final columns = switch (width) {
                   < 600 => 1,
-                  < 1100 => 2,
+                  < 900 => 2,
                   _ => 3,
                 };
                 // Card width → 4:3 image height + fixed text/button area (~160px)
                 const hSpacing = 12.0;
                 const hPadding = 32.0; // 16 left + 16 right
                 final cardWidth = (width - hPadding - (columns - 1) * hSpacing) / columns;
-                final cardHeight = cardWidth * 3 / 4 + 200;
+                final cardHeight = cardWidth * 3 / 4 + 190;
                 return GridView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -203,6 +237,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   ),
                 );
               },
+            ),
             ),
           ),
         ],
@@ -250,7 +285,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   children: [
                     const Text(
                       'Go to Cart',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(width: 12),
                     Container(
@@ -261,7 +296,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       ),
                       child: Text(
                         '₹${widget.cart.total.round()}',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ],
@@ -298,7 +333,7 @@ class _MenuItemCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Card.outlined(
+    return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -308,19 +343,52 @@ class _MenuItemCard extends StatelessWidget {
             // Image — real asset when available, icon placeholder otherwise
             AspectRatio(
               aspectRatio: 4 / 3,
-              child: item.imagePath.isNotEmpty
-                  ? Image.asset(
-                      item.imagePath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => ColoredBox(
-                        color: item.color.withAlpha(50),
-                        child: Center(child: Icon(item.icon, size: 64, color: item.color)),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  item.imagePath.isNotEmpty
+                      ? Image.asset(
+                          item.imagePath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => ColoredBox(
+                            color: item.color.withAlpha(50),
+                            child: Center(child: Icon(item.icon, size: 64, color: item.color)),
+                          ),
+                        )
+                      : ColoredBox(
+                          color: item.color.withAlpha(50),
+                          child: Center(child: Icon(item.icon, size: 64, color: item.color)),
+                        ),
+                  Positioned(
+                    bottom: 10,
+                    left: 16,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(200),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    )
-                  : ColoredBox(
-                      color: item.color.withAlpha(50),
-                      child: Center(child: Icon(item.icon, size: 64, color: item.color)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              item.rating.toStringAsFixed(1),
+                              style: tt.labelMedium?.copyWith(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(width: 3),
+                            Icon(Icons.star_rounded, size: 14, color: _starColor(item.rating)),
+                          ],
+                        ),
+                      ),
                     ),
+                  ),
+                ],
+              ),
             ),
 
             // Text block — Expanded so it fills remaining space and
@@ -334,30 +402,16 @@ class _MenuItemCard extends StatelessWidget {
                   children: [
                     Text(
                       item.name,
-                      style: tt.titleSmall?.copyWith(fontSize: 20, fontWeight: FontWeight.w600),
+                      style: tt.titleSmall?.copyWith(fontSize: 20, fontWeight: FontWeight.w500),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       item.description,
-                      style: tt.bodySmall?.copyWith(fontSize: 16, color: cs.onSurfaceVariant),
+                      style: tt.bodySmall?.copyWith(fontSize: 14, color: cs.onSurfaceVariant.withAlpha(140)),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(Icons.star_rounded, size: 16, color: _starColor(item.rating)),
-                        const SizedBox(width: 3),
-                        Text(
-                          item.rating.toStringAsFixed(1),
-                          style: tt.labelMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
@@ -366,21 +420,54 @@ class _MenuItemCard extends StatelessWidget {
             ),
 
             // Price + add button — always at bottom
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final buttonWidth = constraints.maxWidth * 0.5;
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+            ColoredBox(
+              color: Theme.of(context).colorScheme.surface,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final buttonWidth = constraints.maxWidth * 0.5;
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '₹${item.price.round()}',
-                        style: tt.titleSmall?.copyWith(
-                          fontSize: 20,
-                          color: cs.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text.rich(
+                            TextSpan(children: [
+                              TextSpan(
+                                text: '₹',
+                                style: tt.titleSmall?.copyWith(
+                                  fontSize: 13,
+                                  color: cs.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '${item.price.round()}',
+                                style: tt.titleSmall?.copyWith(
+                                  fontSize: 22,
+                                  color: cs.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ]),
+                          ),
+                          if (item.originalPrice != null) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              '₹${item.originalPrice!.round()}',
+                              style: tt.bodySmall?.copyWith(
+                                fontSize: 13,
+                                color: cs.onSurfaceVariant.withAlpha(120),
+                                decoration: TextDecoration.lineThrough,
+                                decorationColor: cs.onSurfaceVariant.withAlpha(120),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       if (_isCustomizable)
                         FilledButton.tonal(
@@ -388,7 +475,7 @@ class _MenuItemCard extends StatelessWidget {
                           style: FilledButton.styleFrom(
                             fixedSize: Size(buttonWidth, 56),
                             iconSize: 22,
-                            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'GoogleSansFlex', fontVariations: [FontVariation('ROND', 100.0)]),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
@@ -416,7 +503,7 @@ class _MenuItemCard extends StatelessWidget {
                                 style: FilledButton.styleFrom(
                                   fixedSize: Size(buttonWidth, 56),
                                   iconSize: 22,
-                                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'GoogleSansFlex', fontVariations: [FontVariation('ROND', 100.0)]),
                                 ),
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -445,7 +532,7 @@ class _MenuItemCard extends StatelessWidget {
                                       constraints: const BoxConstraints.tightFor(width: 56, height: 56),
                                       onPressed: () { SoundService.playTap(); cart.decrement(cartItem!); },
                                     ),
-                                    Text('$count', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                    Text('$count', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                                     IconButton(
                                       icon: const Icon(Icons.add),
                                       constraints: const BoxConstraints.tightFor(width: 56, height: 56),
@@ -459,8 +546,9 @@ class _MenuItemCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ],
         ),

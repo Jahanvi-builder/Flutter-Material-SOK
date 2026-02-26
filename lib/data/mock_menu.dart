@@ -22,6 +22,7 @@ const List<MenuItem> menuItems = [
     isVeg: true, spiceLevel: 2, prepTime: '10 mins',
     imagePath: 'Images/Food/Combos/north_veg_meal.jpg',
     rating: 4.5,
+    originalPrice: 320,
     icon: Icons.set_meal, color: Color(0xFF66BB6A),
   ),
   MenuItem(
@@ -49,6 +50,7 @@ const List<MenuItem> menuItems = [
     isVeg: false, spiceLevel: 3, prepTime: '12 mins',
     imagePath: 'Images/Food/Combos/south_no-veg.jpg',
     rating: 4.7,
+    originalPrice: 380,
     icon: Icons.set_meal, color: Color(0xFFEF5350),
   ),
 
@@ -165,6 +167,7 @@ const List<MenuItem> menuItems = [
     isVeg: false, spiceLevel: 1, prepTime: '18 mins',
     imagePath: 'Images/Food/North indian/butter_chicken.jpg',
     rating: 4.8,
+    originalPrice: 400,
     icon: Icons.set_meal, color: Color(0xFFFFB74D),
   ),
   MenuItem(
@@ -174,6 +177,7 @@ const List<MenuItem> menuItems = [
     isVeg: false, spiceLevel: 4, prepTime: '25 mins',
     imagePath: 'Images/Food/North indian/mutton.jpg',
     rating: 4.7,
+    originalPrice: 560,
     icon: Icons.set_meal, color: Color(0xFFD32F2F),
   ),
 
@@ -194,6 +198,7 @@ const List<MenuItem> menuItems = [
     isVeg: false, spiceLevel: 3, prepTime: '15 mins',
     imagePath: 'Images/Food/North indian/biryani.jpg',
     rating: 4.8,
+    originalPrice: 350,
     icon: Icons.rice_bowl, color: Color(0xFFFFCA28),
   ),
   MenuItem(
@@ -234,6 +239,7 @@ const List<MenuItem> menuItems = [
     isVeg: true, spiceLevel: 2, prepTime: '10 mins',
     imagePath: 'Images/Food/SouthIndian/Mysore_dosa.jpg',
     rating: 4.7,
+    originalPrice: 150,
     icon: Icons.breakfast_dining, color: Color(0xFFFFB74D),
   ),
   MenuItem(
@@ -361,6 +367,7 @@ const List<MenuItem> menuItems = [
     isVeg: false, spiceLevel: 4, prepTime: '12 mins',
     imagePath: 'Images/Food/Chinese/chilli_chicken.jpg',
     rating: 4.7,
+    originalPrice: 320,
     icon: Icons.fastfood, color: Color(0xFFE53935),
   ),
 
@@ -421,6 +428,7 @@ const List<MenuItem> menuItems = [
     isVeg: false, spiceLevel: 4, prepTime: '12 mins',
     imagePath: 'Images/Food/Chinese/hakka_noodles.jpg',
     rating: 4.6,
+    originalPrice: 300,
     icon: Icons.ramen_dining, color: Color(0xFFB71C1C),
   ),
 
@@ -450,6 +458,7 @@ const List<MenuItem> menuItems = [
     isVeg: false, spiceLevel: 4, prepTime: '10 mins',
     imagePath: 'Images/Food/Quick bites/Chicken_65.jpg',
     rating: 4.8,
+    originalPrice: 270,
     icon: Icons.fastfood, color: Color(0xFFFF5722),
   ),
 
@@ -488,6 +497,7 @@ const List<MenuItem> menuItems = [
     isVeg: true, spiceLevel: 0, prepTime: '7 mins',
     imagePath: 'Images/Food/Beverages/cold coffee.jpg',
     rating: 4.6,
+    originalPrice: 160,
     icon: Icons.local_cafe, color: Color(0xFF795548),
   ),
   MenuItem(

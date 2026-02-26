@@ -53,7 +53,10 @@ class CartScreen extends StatelessWidget {
             );
           }
 
-          return Column(
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Column(
             children: [
               // Items list
               Expanded(
@@ -107,7 +110,7 @@ class CartScreen extends StatelessWidget {
                         label: const Text('Proceed to Payment'),
                         style: FilledButton.styleFrom(
                           minimumSize: const Size.fromHeight(52),
-                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                       ),
                     ],
@@ -115,6 +118,8 @@ class CartScreen extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+            ),
           );
         },
       ),
@@ -192,7 +197,7 @@ class _CartItemTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.name, style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  Text(item.name, style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
                   if (cartItem.size != null)
                     Text(cartItem.size!, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
                   if (cartItem.addOns.isNotEmpty)
@@ -223,7 +228,7 @@ class _CartItemTile extends StatelessWidget {
                     style: tt.titleSmall,
                   ),
                 ),
-                IconButton.filled(
+                IconButton.filledTonal(
                   icon: const Icon(Icons.add, size: 16),
                   onPressed: () { SoundService.playTap(); cart.increment(cartItem); },
                   style: IconButton.styleFrom(
@@ -237,11 +242,27 @@ class _CartItemTile extends StatelessWidget {
 
             // Subtotal
             SizedBox(
-              width: 60,
-              child: Text(
-                '₹${cartItem.subtotal.round()}',
-                textAlign: TextAlign.right,
-                style: tt.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+              width: 72,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (item.originalPrice != null)
+                    Text(
+                      '₹${(item.originalPrice! * cartItem.quantity).round()}',
+                      textAlign: TextAlign.right,
+                      style: tt.bodySmall?.copyWith(
+                        color: cs.onSurfaceVariant.withAlpha(120),
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: cs.onSurfaceVariant.withAlpha(120),
+                      ),
+                    ),
+                  Text(
+                    '₹${cartItem.subtotal.round()}',
+                    textAlign: TextAlign.right,
+                    style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                  ),
+                ],
               ),
             ),
           ],
@@ -263,7 +284,7 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = (bold ? tt.titleMedium : tt.bodyLarge)?.copyWith(
-      fontWeight: bold ? FontWeight.bold : null,
+      fontWeight: bold ? FontWeight.w500 : null,
       color: color,
     );
     return Row(

@@ -95,7 +95,7 @@ class _LaunchCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(title, style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                     const SizedBox(height: 4),
                     Text(
                       description,

@@ -68,7 +68,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             Text(
                               '₹${widget.cart.total.round()}',
                               style: tt.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w500,
                                 color: cs.primary,
                               ),
                             ),
@@ -87,7 +87,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
               Text(
                 'How would you like to pay?',
-                style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 16),
 
@@ -136,7 +136,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       Text(
                                         m.title,
                                         style: tt.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.w500,
                                           color: isSelected ? cs.primary : null,
                                         ),
                                       ),
@@ -175,7 +175,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 label: Text('Confirm Payment · ₹${widget.cart.total.round()}'),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
             ],

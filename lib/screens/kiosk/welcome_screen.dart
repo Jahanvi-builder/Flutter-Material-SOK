@@ -4,10 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/cart_controller.dart';
 import '../../theme/app_theme.dart';
 import '../../services/sound_service.dart';
-import 'phone_screen.dart';
+import 'menu_screen.dart';
 
 extension on OrderType {
-  String get label => this == OrderType.dineIn ? 'Dine In' : 'Take Away';
+  String get label => this == OrderType.dineIn ? 'Start Ordering' : 'Take Away';
   IconData get icon =>
       this == OrderType.dineIn ? Icons.restaurant_rounded : Icons.takeout_dining_rounded;
 }
@@ -28,7 +28,7 @@ class _OrderTypeButton extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => PhoneScreen(cart: CartController(orderType: type)),
+            builder: (_) => MenuScreen(cart: CartController(orderType: type)),
           ),
         );
       },
@@ -59,7 +59,7 @@ class _OrderTypeButton extends StatelessWidget {
                 children: [
                   Text(
                     type.label,
-                    style: tt.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w500),
                   ),
                   Text(
                     type == OrderType.dineIn
@@ -87,9 +87,15 @@ class WelcomeScreen extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      body: Container(
-        color: AppTheme.brandGreen,
-        child: SafeArea(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'images/splash/c3354750dda02d843caa03b6c1320687.jpg',
+            fit: BoxFit.cover,
+          ),
+          Container(color: AppTheme.brandGreen.withAlpha(210)),
+          SafeArea(
           child: Column(
             children: [
               // Top branding area
@@ -115,7 +121,7 @@ class WelcomeScreen extends StatelessWidget {
                     Text(
                       'Tasty Bites',
                       style: tt.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
                     ),
@@ -138,7 +144,7 @@ class WelcomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'How would you like your order?',
+                      'Tap below to start your order',
                       style: tt.titleLarge?.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(height: 12),
@@ -147,11 +153,9 @@ class WelcomeScreen extends StatelessWidget {
                       child: Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 580),
-                          child: Column(
+                          child: const Column(
                             children: [
                               _OrderTypeButton(type: OrderType.dineIn),
-                              const SizedBox(height: 12),
-                              _OrderTypeButton(type: OrderType.takeAway),
                             ],
                           ),
                         ),
@@ -163,7 +167,7 @@ class WelcomeScreen extends StatelessWidget {
 
               // Footer — Powered by Pine Labs
               Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.only(bottom: 52),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -183,6 +187,7 @@ class WelcomeScreen extends StatelessWidget {
             ],
           ),
         ),
+        ],
       ),
     );
   }

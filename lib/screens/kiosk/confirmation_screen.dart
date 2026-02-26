@@ -80,7 +80,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
 
               Text(
                 'Order Placed!',
-                style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 8),
               Text(
@@ -105,7 +105,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             Text(
                               '#$_orderNumber',
                               style: tt.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w500,
                                 color: cs.primary,
                               ),
                             ),
@@ -127,7 +127,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             Text(
                               '10–15 min',
                               style: tt.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w500,
                                 color: cs.tertiary,
                               ),
                             ),
@@ -148,7 +148,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Order Summary', style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                      Text('Order Summary', style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
                       const SizedBox(height: 12),
                       ..._snapshot.map(
                         (ci) => Padding(
@@ -197,7 +197,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                 label: const Text('Start New Order'),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
             ],

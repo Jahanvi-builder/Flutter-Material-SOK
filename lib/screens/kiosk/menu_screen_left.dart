@@ -250,7 +250,7 @@ class _MenuScreenLeftState extends State<MenuScreenLeft> {
               children: [
                 const Text('Go to Cart',
                     style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
+                        fontSize: 16, fontWeight: FontWeight.w500)),
                 const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -262,7 +262,7 @@ class _MenuScreenLeftState extends State<MenuScreenLeft> {
                   child: Text(
                     '₹${widget.cart.total.round()}',
                     style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w600),
+                        fontSize: 15, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -322,7 +322,7 @@ class _MenuItemCard extends StatelessWidget {
                       Text(
                         item.name,
                         style: tt.titleSmall?.copyWith(
-                            fontSize: 20, fontWeight: FontWeight.w600),
+                            fontSize: 20, fontWeight: FontWeight.w500),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -349,7 +349,7 @@ class _MenuItemCard extends StatelessWidget {
                     style: tt.titleSmall?.copyWith(
                       fontSize: 20,
                       color: cs.primary,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   FilledButton.tonal(
@@ -358,7 +358,7 @@ class _MenuItemCard extends StatelessWidget {
                       minimumSize: const Size(120, 56),
                       iconSize: 22,
                       textStyle: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,

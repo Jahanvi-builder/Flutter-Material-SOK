@@ -53,7 +53,12 @@ class AppTheme {
     onSecondaryContainer: const Color(0xFF8FF5BB),
   );
 
-  static const _rond = [FontVariation('ROND', 100)];
+  static const _rond = [FontVariation('ROND', 100.0)];
+
+  static TextStyle _gs(TextStyle? base) => (base ?? const TextStyle()).copyWith(
+    fontFamily: 'GoogleSansFlex',
+    fontVariations: _rond,
+  );
 
   static TextTheme _roundedTextTheme(ColorScheme scheme) {
     final base = GoogleFonts.googleSansFlexTextTheme().apply(
@@ -61,21 +66,21 @@ class AppTheme {
       displayColor: scheme.onSurface,
     );
     return base.copyWith(
-      displayLarge:   base.displayLarge?.copyWith(fontVariations: _rond),
-      displayMedium:  base.displayMedium?.copyWith(fontVariations: _rond),
-      displaySmall:   base.displaySmall?.copyWith(fontVariations: _rond),
-      headlineLarge:  base.headlineLarge?.copyWith(fontVariations: _rond),
-      headlineMedium: base.headlineMedium?.copyWith(fontVariations: _rond),
-      headlineSmall:  base.headlineSmall?.copyWith(fontVariations: _rond),
-      titleLarge:     base.titleLarge?.copyWith(fontVariations: _rond),
-      titleMedium:    base.titleMedium?.copyWith(fontVariations: _rond),
-      titleSmall:     base.titleSmall?.copyWith(fontVariations: _rond),
-      bodyLarge:      base.bodyLarge?.copyWith(fontVariations: _rond),
-      bodyMedium:     base.bodyMedium?.copyWith(fontVariations: _rond),
-      bodySmall:      base.bodySmall?.copyWith(fontVariations: _rond),
-      labelLarge:     base.labelLarge?.copyWith(fontVariations: _rond),
-      labelMedium:    base.labelMedium?.copyWith(fontVariations: _rond),
-      labelSmall:     base.labelSmall?.copyWith(fontVariations: _rond),
+      displayLarge:   _gs(base.displayLarge),
+      displayMedium:  _gs(base.displayMedium),
+      displaySmall:   _gs(base.displaySmall),
+      headlineLarge:  _gs(base.headlineLarge),
+      headlineMedium: _gs(base.headlineMedium),
+      headlineSmall:  _gs(base.headlineSmall),
+      titleLarge:     _gs(base.titleLarge),
+      titleMedium:    _gs(base.titleMedium),
+      titleSmall:     _gs(base.titleSmall),
+      bodyLarge:      _gs(base.bodyLarge),
+      bodyMedium:     _gs(base.bodyMedium),
+      bodySmall:      _gs(base.bodySmall),
+      labelLarge:     _gs(base.labelLarge),
+      labelMedium:    _gs(base.labelMedium),
+      labelSmall:     _gs(base.labelSmall),
     );
   }
 
@@ -84,9 +89,9 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       cardTheme: CardThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(32)),
-          side: BorderSide(color: scheme.outlineVariant),
+        color: scheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32)),
         ),
       ),
       textTheme: _roundedTextTheme(scheme),
