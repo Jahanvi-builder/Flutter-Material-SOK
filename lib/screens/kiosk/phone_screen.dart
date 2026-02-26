@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../theme/app_theme.dart';
 import '../../services/sound_service.dart';
@@ -66,58 +67,72 @@ class _PhoneOtpDialogState extends State<_PhoneOtpDialog> {
   void dispose() {
     _phoneController.dispose();
     _phoneFocus.dispose();
-    for (final c in _otpControllers) c.dispose();
-    for (final f in _otpFocusNodes) f.dispose();
+    for (final c in _otpControllers) { c.dispose(); }
+    for (final f in _otpFocusNodes) { f.dispose(); }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final isWide = MediaQuery.sizeOf(context).width >= 700;
+    final cs = Theme.of(context).colorScheme;
 
     return Dialog(
-      backgroundColor: AppTheme.brandGreen,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-      insetPadding: EdgeInsets.symmetric(
-        horizontal: isWide ? 80 : 24,
-        vertical: 40,
-      ),
+      insetPadding: const EdgeInsets.all(40),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
+        constraints: const BoxConstraints(maxWidth: 560),
         child: Padding(
           padding: const EdgeInsets.all(36),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: _showOtp
-                ? _OtpContent(
-                    key: const ValueKey('otp'),
-                    phone: _phoneController.text.trim(),
-                    controllers: _otpControllers,
-                    focusNodes: _otpFocusNodes,
-                    otpComplete: _otpComplete,
-                    onVerify: _verify,
-                    onChangeNumber: () {
-                      SoundService.playTap();
-                      setState(() {
-                        _showOtp = false;
-                        for (final c in _otpControllers) c.clear();
-                      });
-                      WidgetsBinding.instance.addPostFrameCallback(
-                        (_) => _phoneFocus.requestFocus(),
-                      );
-                    },
-                    tt: tt,
-                  )
-                : _PhoneContent(
-                    key: const ValueKey('phone'),
-                    controller: _phoneController,
-                    focusNode: _phoneFocus,
-                    hasNumber: _hasNumber,
-                    onContinue: _goToOtp,
-                    onSkip: _skip,
-                    tt: tt,
-                  ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Pine Labs logo
+              SvgPicture.asset(
+                'images/logo/pinelabs_logo.svg',
+                height: 20,
+                colorFilter: const ColorFilter.mode(AppTheme.brandGreen, BlendMode.srcIn),
+              ),
+              const SizedBox(height: 28),
+
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _showOtp
+                    ? _OtpContent(
+                        key: const ValueKey('otp'),
+                        phone: _phoneController.text.trim(),
+                        controllers: _otpControllers,
+                        focusNodes: _otpFocusNodes,
+                        otpComplete: _otpComplete,
+                        onVerify: _verify,
+                        onChangeNumber: () {
+                          SoundService.playTap();
+                          setState(() {
+                            _showOtp = false;
+                            for (final c in _otpControllers) { c.clear(); }
+                          });
+                          WidgetsBinding.instance.addPostFrameCallback(
+                            (_) => _phoneFocus.requestFocus(),
+                          );
+                        },
+                        tt: tt,
+                        cs: cs,
+                      )
+                    : _PhoneContent(
+                        key: const ValueKey('phone'),
+                        controller: _phoneController,
+                        focusNode: _phoneFocus,
+                        hasNumber: _hasNumber,
+                        onContinue: _goToOtp,
+                        onSkip: _skip,
+                        tt: tt,
+                        cs: cs,
+                      ),
+              ),
+            ],
           ),
         ),
       ),
@@ -136,6 +151,7 @@ class _PhoneContent extends StatelessWidget {
     required this.onContinue,
     required this.onSkip,
     required this.tt,
+    required this.cs,
   });
 
   final TextEditingController controller;
@@ -144,6 +160,7 @@ class _PhoneContent extends StatelessWidget {
   final VoidCallback onContinue;
   final VoidCallback onSkip;
   final TextTheme tt;
+  final ColorScheme cs;
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +171,7 @@ class _PhoneContent extends StatelessWidget {
         Text(
           'Login to see\ngreat offers',
           style: tt.displaySmall?.copyWith(
-            color: Colors.white,
+            color: AppTheme.brandGreen,
             fontWeight: FontWeight.w500,
             height: 1.15,
           ),
@@ -162,10 +179,10 @@ class _PhoneContent extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           'Enter your mobile number to continue.',
-          style: tt.bodyLarge?.copyWith(color: Colors.white60),
+          style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
         ),
         const SizedBox(height: 40),
-        _PhoneField(controller: controller, focusNode: focusNode, tt: tt),
+        _PhoneField(controller: controller, focusNode: focusNode, tt: tt, cs: cs),
         const SizedBox(height: 20),
         Row(
           children: [
@@ -173,8 +190,8 @@ class _PhoneContent extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: onSkip,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white70,
-                  side: const BorderSide(color: Colors.white30, width: 1.5),
+                  foregroundColor: cs.onSurfaceVariant,
+                  side: BorderSide(color: cs.outlineVariant, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 22),
                   textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                   shape: RoundedRectangleBorder(
@@ -190,10 +207,10 @@ class _PhoneContent extends StatelessWidget {
               child: FilledButton(
                 onPressed: hasNumber ? onContinue : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.brandMint,
-                  foregroundColor: AppTheme.brandGreen,
-                  disabledBackgroundColor: Colors.white12,
-                  disabledForegroundColor: Colors.white30,
+                  backgroundColor: AppTheme.brandGreen,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: cs.surfaceContainerHighest,
+                  disabledForegroundColor: cs.onSurfaceVariant.withAlpha(100),
                   padding: const EdgeInsets.symmetric(vertical: 22),
                   textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                   shape: RoundedRectangleBorder(
@@ -215,11 +232,13 @@ class _PhoneField extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.tt,
+    required this.cs,
   });
 
   final TextEditingController controller;
   final FocusNode focusNode;
   final TextTheme tt;
+  final ColorScheme cs;
 
   @override
   Widget build(BuildContext context) {
@@ -229,10 +248,10 @@ class _PhoneField extends StatelessWidget {
         final hasNumber = controller.text.trim().length == 10;
         return Container(
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(20),
+            color: cs.surfaceContainerLow,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: focusNode.hasFocus ? AppTheme.brandMint : Colors.white24,
+              color: focusNode.hasFocus ? AppTheme.brandGreen : cs.outlineVariant,
               width: 1.5,
             ),
           ),
@@ -243,12 +262,12 @@ class _PhoneField extends StatelessWidget {
                 child: Text(
                   '+91',
                   style: tt.titleLarge?.copyWith(
-                    color: Colors.white70,
+                    color: cs.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-              Container(width: 1, height: 36, color: Colors.white24),
+              Container(width: 1, height: 36, color: cs.outlineVariant),
               Expanded(
                 child: TextField(
                   controller: controller,
@@ -259,13 +278,13 @@ class _PhoneField extends StatelessWidget {
                     LengthLimitingTextInputFormatter(10),
                   ],
                   style: tt.headlineSmall?.copyWith(
-                    color: Colors.white,
+                    color: cs.onSurface,
                     letterSpacing: 3,
                   ),
                   decoration: InputDecoration(
                     hintText: '00000 00000',
                     hintStyle: tt.headlineSmall?.copyWith(
-                      color: Colors.white24,
+                      color: cs.onSurface.withAlpha(40),
                       letterSpacing: 3,
                     ),
                     border: InputBorder.none,
@@ -277,11 +296,11 @@ class _PhoneField extends StatelessWidget {
                 ),
               ),
               if (hasNumber)
-                const Padding(
-                  padding: EdgeInsets.only(right: 16),
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
                   child: Icon(
                     Icons.check_circle_rounded,
-                    color: AppTheme.brandMint,
+                    color: AppTheme.brandGreen,
                     size: 28,
                   ),
                 ),
@@ -305,6 +324,7 @@ class _OtpContent extends StatelessWidget {
     required this.onVerify,
     required this.onChangeNumber,
     required this.tt,
+    required this.cs,
   });
 
   final String phone;
@@ -314,6 +334,7 @@ class _OtpContent extends StatelessWidget {
   final VoidCallback onVerify;
   final VoidCallback onChangeNumber;
   final TextTheme tt;
+  final ColorScheme cs;
 
   @override
   Widget build(BuildContext context) {
@@ -324,20 +345,20 @@ class _OtpContent extends StatelessWidget {
         Text(
           'Enter OTP',
           style: tt.displaySmall?.copyWith(
-            color: Colors.white,
+            color: AppTheme.brandGreen,
             fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 12),
         RichText(
           text: TextSpan(
-            style: tt.bodyLarge?.copyWith(color: Colors.white60),
+            style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
             children: [
               const TextSpan(text: 'OTP sent to '),
               TextSpan(
                 text: '+91 ${phone.substring(0, 5)} ${phone.substring(5)}',
-                style: const TextStyle(
-                  color: AppTheme.brandMint,
+                style: TextStyle(
+                  color: AppTheme.brandGreen,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -356,6 +377,7 @@ class _OtpContent extends StatelessWidget {
               prevFocus: i > 0 ? focusNodes[i - 1] : null,
               prevController: i > 0 ? controllers[i - 1] : null,
               tt: tt,
+              cs: cs,
             ),
           ),
         ),
@@ -366,8 +388,8 @@ class _OtpContent extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: onChangeNumber,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white70,
-                  side: const BorderSide(color: Colors.white30, width: 1.5),
+                  foregroundColor: cs.onSurfaceVariant,
+                  side: BorderSide(color: cs.outlineVariant, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 22),
                   textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                   shape: RoundedRectangleBorder(
@@ -383,10 +405,10 @@ class _OtpContent extends StatelessWidget {
               child: FilledButton(
                 onPressed: otpComplete ? onVerify : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.brandMint,
-                  foregroundColor: AppTheme.brandGreen,
-                  disabledBackgroundColor: Colors.white12,
-                  disabledForegroundColor: Colors.white30,
+                  backgroundColor: AppTheme.brandGreen,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: cs.surfaceContainerHighest,
+                  disabledForegroundColor: cs.onSurfaceVariant.withAlpha(100),
                   padding: const EdgeInsets.symmetric(vertical: 22),
                   textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                   shape: RoundedRectangleBorder(
@@ -408,6 +430,7 @@ class _OtpBox extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.tt,
+    required this.cs,
     this.nextFocus,
     this.prevFocus,
     this.prevController,
@@ -419,6 +442,7 @@ class _OtpBox extends StatelessWidget {
   final FocusNode? prevFocus;
   final TextEditingController? prevController;
   final TextTheme tt;
+  final ColorScheme cs;
 
   @override
   Widget build(BuildContext context) {
@@ -429,10 +453,10 @@ class _OtpBox extends StatelessWidget {
           width: 52,
           height: 64,
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(20),
+            color: cs.surfaceContainerLow,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: focusNode.hasFocus ? AppTheme.brandMint : Colors.white24,
+              color: focusNode.hasFocus ? AppTheme.brandGreen : cs.outlineVariant,
               width: 1.5,
             ),
           ),
@@ -444,7 +468,7 @@ class _OtpBox extends StatelessWidget {
             maxLength: 1,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             style: tt.headlineMedium?.copyWith(
-              color: Colors.white,
+              color: AppTheme.brandGreen,
               fontWeight: FontWeight.w500,
             ),
             decoration: const InputDecoration(

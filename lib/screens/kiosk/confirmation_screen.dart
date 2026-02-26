@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/cart_controller.dart';
 import '../../models/cart_item.dart';
+import '../home_screen.dart';
 import 'welcome_screen.dart';
 
 class ConfirmationScreen extends StatefulWidget {
@@ -53,154 +54,177 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 580),
+            child: Column(
+              children: [
+                // Scrollable content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 48),
 
-              // Success animation
-              ScaleTransition(
-                scale: _scaleAnim,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: cs.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.check_rounded,
-                    size: 72,
-                    color: cs.onPrimaryContainer,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              Text(
-                'Order Placed!',
-                style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your order is being prepared',
-                style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Order number + ETA
-              Row(
-                children: [
-                  Expanded(
-                    child: Card.filled(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            Icon(Icons.confirmation_number_outlined, size: 32, color: cs.primary),
-                            const SizedBox(height: 8),
-                            Text('Order No.', style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant)),
-                            Text(
-                              '#$_orderNumber',
-                              style: tt.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: cs.primary,
-                              ),
+                        // Success animation
+                        ScaleTransition(
+                          scale: _scaleAnim,
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: cs.primaryContainer,
+                              shape: BoxShape.circle,
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Card.filled(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            Icon(Icons.schedule_rounded, size: 32, color: cs.tertiary),
-                            const SizedBox(height: 8),
-                            Text('Est. Time', style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant)),
-                            Text(
-                              '10–15 min',
-                              style: tt.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: cs.tertiary,
-                              ),
+                            child: Icon(
+                              Icons.check_rounded,
+                              size: 72,
+                              color: cs.onPrimaryContainer,
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // Items summary
-              Card.outlined(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Order Summary', style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 12),
-                      ..._snapshot.map(
-                        (ci) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: ci.item.color.withAlpha(50),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Icon(ci.item.icon, size: 14, color: ci.item.color),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  '${ci.quantity}×  ${ci.item.name}${ci.size != null ? ' (${ci.size})' : ''}',
-                                  style: tt.bodyMedium,
-                                ),
-                              ),
-                              Text(
-                                '₹${ci.subtotal.round()}',
-                                style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                              ),
-                            ],
                           ),
                         ),
+                        const SizedBox(height: 24),
+
+                        Text(
+                          'Order Placed!',
+                          style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Your order is being prepared · 10–15 min',
+                          style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Order number colored box
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: cs.primaryContainer,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            'Order No. #$_orderNumber',
+                            style: tt.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: cs.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Items summary
+                        Card.outlined(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Order Summary', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                                const SizedBox(height: 16),
+                                ..._snapshot.map(
+                                  (ci) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: SizedBox(
+                                            width: 56,
+                                            height: 56,
+                                            child: ci.item.imagePath.isNotEmpty
+                                                ? Image.asset(
+                                                    ci.item.imagePath,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (_, _, _) => ColoredBox(
+                                                      color: ci.item.color.withAlpha(50),
+                                                      child: Icon(ci.item.icon, size: 24, color: ci.item.color),
+                                                    ),
+                                                  )
+                                                : ColoredBox(
+                                                    color: ci.item.color.withAlpha(50),
+                                                    child: Icon(ci.item.icon, size: 24, color: ci.item.color),
+                                                  ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Text(
+                                            '${ci.item.name}${ci.size != null ? ' (${ci.size})' : ''}',
+                                            style: tt.bodyLarge,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 36,
+                                          child: Text(
+                                            '${ci.quantity}×',
+                                            textAlign: TextAlign.end,
+                                            style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        SizedBox(
+                                          width: 80,
+                                          child: Text(
+                                            '₹${ci.subtotal.round()}',
+                                            textAlign: TextAlign.end,
+                                            style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Pinned button pair at bottom
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () => Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                          (route) => false,
+                        ),
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('New Order'),
+                        style: OutlinedButton.styleFrom(
+                          fixedSize: const Size.fromHeight(56),
+                          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      FilledButton.tonal(
+                        onPressed: () => Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                          (route) => false,
+                        ),
+                        style: FilledButton.styleFrom(
+                          fixedSize: const Size.fromHeight(56),
+                          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                        ),
+                        child: const Text('Go to Home'),
                       ),
                     ],
                   ),
                 ),
-              ),
-
-              const Spacer(),
-
-              // New order button
-              OutlinedButton.icon(
-                onPressed: () => Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-                  (route) => false,
-                ),
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Start New Order'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

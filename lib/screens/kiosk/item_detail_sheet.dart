@@ -28,7 +28,9 @@ void showItemDetail(BuildContext context, MenuItem item, CartController cart) {
       builder: (_) => Dialog(
         insetPadding: const EdgeInsets.all(40),
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
         child: SizedBox(
           width: 560,
           child: _ItemDetailContent(item: item, cart: cart),
@@ -40,16 +42,24 @@ void showItemDetail(BuildContext context, MenuItem item, CartController cart) {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         minChildSize: 0.5,
         maxChildSize: 0.95,
         expand: false,
-        builder: (_, scrollController) => _ItemDetailContent(
-          item: item,
-          cart: cart,
-          scrollController: scrollController,
-          showDragHandle: true,
+        builder: (_, scrollController) => Material(
+          color: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          child: _ItemDetailContent(
+            item: item,
+            cart: cart,
+            scrollController: scrollController,
+            showDragHandle: true,
+          ),
         ),
       ),
     );
@@ -286,39 +296,44 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                 Row(
                   children: [
                     // Quantity stepper
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: cs.outlineVariant),
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.remove),
-                            onPressed: _quantity > 1
-                                ? () { SoundService.playTap(); setState(() => _quantity--); }
-                                : null,
-                          ),
-                          SizedBox(
-                            width: 36,
-                            child: Text(
-                              '$_quantity',
-                              textAlign: TextAlign.center,
-                              style: tt.titleLarge,
+                    SizedBox(
+                      height: 56,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: cs.outlineVariant),
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove),
+                              constraints: const BoxConstraints.tightFor(width: 56, height: 56),
+                              onPressed: _quantity > 1
+                                  ? () { SoundService.playTap(); setState(() => _quantity--); }
+                                  : null,
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: () { SoundService.playTap(); setState(() => _quantity++); },
-                          ),
-                        ],
+                            SizedBox(
+                              width: 36,
+                              child: Text(
+                                '$_quantity',
+                                textAlign: TextAlign.center,
+                                style: tt.titleMedium,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add),
+                              constraints: const BoxConstraints.tightFor(width: 56, height: 56),
+                              onPressed: () { SoundService.playTap(); setState(() => _quantity++); },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
 
                     // Add to cart button
                     Expanded(
-                      child: FilledButton(
+                      child: FilledButton.tonal(
                         onPressed: () {
                           SoundService.playTap();
                           widget.cart.add(
@@ -334,7 +349,7 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                           _showToast(overlay, '${item.name} added to order', cs);
                         },
                         style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          fixedSize: const Size.fromHeight(56),
                           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'GoogleSansFlex', fontVariations: [FontVariation('ROND', 100.0)]),
                         ),
                         child: Text.rich(TextSpan(children: [
