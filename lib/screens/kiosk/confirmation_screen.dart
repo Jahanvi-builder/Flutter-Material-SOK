@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import '../../models/cart_controller.dart';
 import '../../models/cart_item.dart';
-import '../home_screen.dart';
 import 'welcome_screen.dart';
 
 class ConfirmationScreen extends StatefulWidget {
@@ -160,14 +159,14 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             FilledButton.tonal(
                               onPressed: () => Navigator.pushAndRemoveUntil(
                                 context,
-                                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
                                 (route) => false,
                               ),
                               style: FilledButton.styleFrom(
                                 fixedSize: const Size(164, 52),
                                 textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                               ),
-                              child: const Text('Go to Home'),
+                              child: const Text('End Session'),
                             ),
                           ],
                         ),

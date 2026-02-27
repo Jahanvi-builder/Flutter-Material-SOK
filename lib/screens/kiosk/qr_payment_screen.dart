@@ -147,7 +147,7 @@ class _QrPaymentScreenState extends State<QrPaymentScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: SvgPicture.asset(
-                            'Images/UPI Logos/Pine.svg',
+                            'images/UPI Logos/Pine.svg',
                             colorFilter:
                                 ColorFilter.mode(dotColor, BlendMode.srcIn),
                           ),
@@ -214,14 +214,14 @@ class _QrPaymentScreenState extends State<QrPaymentScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    _AppLogo('Images/UPI Logos/googlepay-circle.svg', 'GPay'),
+                    _AppLogo('images/UPI Logos/googlepay-circle.svg', 'GPay'),
                     SizedBox(width: 16),
                     _AppLogo(
-                        'Images/UPI Logos/phonepe-circle.svg', 'PhonePe'),
+                        'images/UPI Logos/phonepe-circle.svg', 'PhonePe'),
                     SizedBox(width: 16),
-                    _AppLogo('Images/UPI Logos/paytm-circle.svg', 'Paytm'),
+                    _AppLogo('images/UPI Logos/paytm-circle.svg', 'Paytm'),
                     SizedBox(width: 16),
-                    _AppLogo('Images/UPI Logos/bhim-circle.svg', 'BHIM'),
+                    _AppLogo('images/UPI Logos/bhim-circle.svg', 'BHIM'),
                   ],
                 ),
               ],

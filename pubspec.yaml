@@ -67,13 +67,13 @@ flutter:
     - images/logo/
     - images/splash/
     - sounds/
-    - Images/Food/Quick bites/
-    - Images/Food/Chinese/
-    - Images/Food/Beverages/
-    - Images/Food/North indian/
-    - Images/Food/SouthIndian/
-    - Images/Food/Combos/
-    - Images/UPI Logos/
+    - images/Food/Quick bites/
+    - images/Food/Chinese/
+    - images/Food/Beverages/
+    - images/Food/North indian/
+    - images/Food/SouthIndian/
+    - images/Food/Combos/
+    - images/UPI Logos/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
