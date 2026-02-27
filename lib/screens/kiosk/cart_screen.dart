@@ -4,8 +4,8 @@ import '../../models/cart_controller.dart';
 import '../../models/cart_item.dart';
 import '../../services/sound_service.dart';
 import 'confirmation_screen.dart';
+import 'qr_payment_screen.dart';
 
-enum _PaymentMethod { tapToPay, card, qr }
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, required this.cart});
@@ -17,12 +17,10 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  _PaymentMethod _selected = _PaymentMethod.tapToPay;
-
   static const _methods = [
-    (method: _PaymentMethod.tapToPay, icon: Icons.contactless_rounded,    label: 'Tap to Pay'),
-    (method: _PaymentMethod.card,     icon: Icons.credit_card_rounded,     label: 'Card'),
-    (method: _PaymentMethod.qr,       icon: Icons.qr_code_scanner_rounded, label: 'QR'),
+    (icon: Icons.qr_code_scanner_rounded, label: 'Pay with UPI',         isQr: true),
+    (icon: Icons.contactless_rounded,     label: 'Tap to Pay',          isQr: false),
+    (icon: Icons.credit_card_rounded,     label: 'Credit / Debit Card', isQr: false),
   ];
 
   @override
@@ -33,6 +31,13 @@ class _CartScreenState extends State<CartScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Order'),
+        actions: [
+          if (!widget.cart.isEmpty)
+            TextButton(
+              onPressed: () => _confirmClear(context),
+              child: const Text('Clear Cart'),
+            ),
+        ],
       ),
       body: ListenableBuilder(
         listenable: widget.cart,
@@ -74,7 +79,7 @@ class _CartScreenState extends State<CartScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),
                     itemCount: widget.cart.items.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    separatorBuilder: (_, _) => const SizedBox(height: 4),
                     itemBuilder: (context, i) => _CartItemTile(
                       cartItem: widget.cart.items[i],
                       cart: widget.cart,
@@ -82,93 +87,58 @@ class _CartScreenState extends State<CartScreen> {
                   ),
 
                   // Order summary + payment
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: cs.surfaceContainerLow,
-                      border: Border(top: BorderSide(color: cs.outlineVariant)),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                     child: SafeArea(
                       child: Column(
                         children: [
-                          _SummaryRow('Subtotal', '₹${widget.cart.subtotal.round()}', tt),
-                          if (widget.cart.discount > 0) ...[
-                            const SizedBox(height: 6),
-                            _SummaryRow(
-                              'Discount',
-                              '−₹${widget.cart.discount.round()}',
-                              tt,
-                              color: Colors.green.shade600,
+                          Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Divider(color: cs.outlineVariant.withAlpha(120)),
+                                ),
+                                _SummaryRow('Subtotal', '₹${widget.cart.subtotal.round()}', tt),
+                                if (widget.cart.discount > 0) ...[
+                                  const SizedBox(height: 6),
+                                  _SummaryRow(
+                                    'Discount',
+                                    '−₹${widget.cart.discount.round()}',
+                                    tt,
+                                    color: Colors.green.shade600,
+                                  ),
+                                ],
+                                const SizedBox(height: 6),
+                                _SummaryRow('GST (5%)', '₹${widget.cart.tax.round()}', tt),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  child: Divider(color: cs.outlineVariant.withAlpha(120)),
+                                ),
+                                _SummaryRow(
+                                  'Total',
+                                  '₹${widget.cart.total.round()}',
+                                  tt,
+                                  bold: true,
+                                  color: cs.primary,
+                                ),
+                              ],
                             ),
-                          ],
-                          const SizedBox(height: 6),
-                          _SummaryRow('GST (5%)', '₹${widget.cart.tax.round()}', tt),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: Divider(),
-                          ),
-                          _SummaryRow(
-                            'Total',
-                            '₹${widget.cart.total.round()}',
-                            tt,
-                            bold: true,
-                            color: cs.primary,
                           ),
                           const SizedBox(height: 20),
 
-                          // Payment method selection
-                          SegmentedButton<_PaymentMethod>(
-                            style: SegmentedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(48),
-                              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                            ),
-                            segments: _methods.map((m) => ButtonSegment(
-                              value: m.method,
-                              icon: Icon(m.icon, size: 18),
-                              label: Text(m.label),
-                            )).toList(),
-                            selected: {_selected},
-                            onSelectionChanged: (v) => setState(() => _selected = v.first),
-                          ),
-
-                          const SizedBox(height: 16),
-
+                          // Payment buttons — UPI full-width, card methods side by side
+                          _PaymentButton(method: _methods[0], cart: widget.cart),
+                          const SizedBox(height: 10),
                           Row(
                             children: [
-                              Expanded(
-                                flex: 1,
-                                child: FilledButton.tonal(
-                                  onPressed: () => _confirmClear(context),
-                                  style: FilledButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(64),
-                                    textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                                  ),
-                                  child: const Text('Clear Cart'),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                flex: 2,
-                                child: FilledButton.icon(
-                                  onPressed: () {
-                                    SoundService.playTap();
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => ConfirmationScreen(cart: widget.cart),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.check_rounded),
-                                  label: Text('Confirm · ₹${widget.cart.total.round()}'),
-                                  style: FilledButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(64),
-                                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                  ),
-                                ),
-                              ),
+                              Expanded(child: _PaymentButton(method: _methods[1], cart: widget.cart)),
+                              const SizedBox(width: 10),
+                              Expanded(child: _PaymentButton(method: _methods[2], cart: widget.cart)),
                             ],
                           ),
+
                         ],
                       ),
                     ),
@@ -221,9 +191,9 @@ class _CartItemTile extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final item = cartItem.item;
 
-    return Card.outlined(
+    return Card.filled(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.zero,
         child: Row(
           children: [
             // Dish thumbnail
@@ -352,6 +322,44 @@ class _SummaryRow extends StatelessWidget {
         Text(label, style: style),
         Text(value, style: style),
       ],
+    );
+  }
+}
+
+class _PaymentButton extends StatelessWidget {
+  const _PaymentButton({required this.method, required this.cart});
+
+  final ({IconData icon, String label, bool isQr}) method;
+  final CartController cart;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton.tonalIcon(
+      onPressed: () {
+        SoundService.playTap();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => method.isQr
+                ? QrPaymentScreen(cart: cart)
+                : ConfirmationScreen(cart: cart, paymentMethod: method.label),
+          ),
+        );
+      },
+      icon: Icon(method.icon, size: 24),
+      label: Row(
+        children: [
+          Expanded(child: Text(method.label)),
+          Icon(Icons.chevron_right_rounded, size: 18,
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ],
+      ),
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(64),
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.fromLTRB(14, 0, 10, 0),
+      ),
     );
   }
 }

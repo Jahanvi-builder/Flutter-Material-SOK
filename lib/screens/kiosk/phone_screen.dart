@@ -192,11 +192,8 @@ class _PhoneContent extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: cs.onSurfaceVariant,
                   side: BorderSide(color: cs.outlineVariant, width: 1.5),
-                  padding: const EdgeInsets.symmetric(vertical: 22),
+                  fixedSize: const Size.fromHeight(56),
                   textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
                 ),
                 child: const Text('Skip'),
               ),
@@ -211,11 +208,8 @@ class _PhoneContent extends StatelessWidget {
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: cs.surfaceContainerHighest,
                   disabledForegroundColor: cs.onSurfaceVariant.withAlpha(100),
-                  padding: const EdgeInsets.symmetric(vertical: 22),
+                  fixedSize: const Size.fromHeight(56),
                   textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
                 ),
                 child: const Text('Continue'),
               ),
@@ -249,7 +243,7 @@ class _PhoneField extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: cs.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: focusNode.hasFocus ? AppTheme.brandGreen : cs.outlineVariant,
               width: 1.5,
@@ -390,13 +384,10 @@ class _OtpContent extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: cs.onSurfaceVariant,
                   side: BorderSide(color: cs.outlineVariant, width: 1.5),
-                  padding: const EdgeInsets.symmetric(vertical: 22),
+                  fixedSize: const Size.fromHeight(56),
                   textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
                 ),
-                child: const Text('Change\nNumber', textAlign: TextAlign.center),
+                child: const Text('Change No.'),
               ),
             ),
             const SizedBox(width: 12),
@@ -409,11 +400,8 @@ class _OtpContent extends StatelessWidget {
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: cs.surfaceContainerHighest,
                   disabledForegroundColor: cs.onSurfaceVariant.withAlpha(100),
-                  padding: const EdgeInsets.symmetric(vertical: 22),
+                  fixedSize: const Size.fromHeight(56),
                   textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
                 ),
                 child: const Text('Verify & Continue'),
               ),
@@ -450,11 +438,11 @@ class _OtpBox extends StatelessWidget {
       listenable: focusNode,
       builder: (context, _) {
         return Container(
-          width: 52,
+          width: 68,
           height: 64,
           decoration: BoxDecoration(
             color: cs.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: focusNode.hasFocus ? AppTheme.brandGreen : cs.outlineVariant,
               width: 1.5,
@@ -465,6 +453,7 @@ class _OtpBox extends StatelessWidget {
             focusNode: focusNode,
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
+            textAlignVertical: TextAlignVertical.center,
             maxLength: 1,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             style: tt.headlineMedium?.copyWith(
@@ -474,7 +463,8 @@ class _OtpBox extends StatelessWidget {
             decoration: const InputDecoration(
               border: InputBorder.none,
               counterText: '',
-              contentPadding: EdgeInsets.zero,
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(vertical: 16),
             ),
             onChanged: (v) {
               if (v.isNotEmpty) {
