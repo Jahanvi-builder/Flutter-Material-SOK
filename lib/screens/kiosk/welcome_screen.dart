@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:video_player/video_player.dart';
 
+import '../../data/coupons.dart';
 import '../../models/cart_controller.dart';
+import '../../services/haptic_service.dart';
 import '../../theme/app_theme.dart';
-import '../../services/sound_service.dart';
 import 'menu_screen.dart';
+
+typedef MenuScreenBuilder = Widget Function(CartController cart);
 
 extension on OrderType {
   String get label => this == OrderType.dineIn ? 'Start Ordering' : 'Take Away';
@@ -13,9 +17,10 @@ extension on OrderType {
 }
 
 class _OrderTypeButton extends StatelessWidget {
-  const _OrderTypeButton({required this.type});
+  const _OrderTypeButton({required this.type, this.menuBuilder});
 
   final OrderType type;
+  final MenuScreenBuilder? menuBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +29,14 @@ class _OrderTypeButton extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        SoundService.playTap();
+        HapticService.tap();
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => MenuScreen(cart: CartController(orderType: type)),
+            builder: (_) {
+                final cart = CartController(orderType: type);
+                return menuBuilder != null ? menuBuilder!(cart) : MenuScreen(cart: cart);
+              },
           ),
         );
       },
@@ -42,16 +50,6 @@ class _OrderTypeButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: cs.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(type.icon, size: 28, color: cs.onPrimaryContainer),
-            ),
-            const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,8 +77,122 @@ class _OrderTypeButton extends StatelessWidget {
   }
 }
 
+class _VideoPlayer extends StatefulWidget {
+  const _VideoPlayer();
+
+  @override
+  State<_VideoPlayer> createState() => _VideoPlayerState();
+}
+
+class _VideoPlayerState extends State<_VideoPlayer> {
+  late VideoPlayerController _controller;
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    _controller = VideoPlayerController.asset(
+      'Video/chef-prepares-noodles-with-meat-and-vegetables-2025-12-17-14-28-45-utc.mp4',
+    );
+    await _controller.initialize();
+    await _controller.setVolume(0);
+    await _controller.setLooping(true);
+    if (mounted) {
+      setState(() => _initialized = true);
+      _controller.play();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: SizedBox.expand(
+        child: _initialized
+            ? FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _controller.value.size.width,
+                  height: _controller.value.size.height,
+                  child: VideoPlayer(_controller),
+                ),
+              )
+            : Container(color: Colors.black38),
+      ),
+    );
+  }
+}
+
+class _OfferCard extends StatelessWidget {
+  const _OfferCard({required this.coupon});
+
+  final Coupon coupon;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return Container(
+      width: 160,
+      margin: const EdgeInsets.only(right: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(25),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withAlpha(50)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            coupon.shortLabel,
+            style: tt.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            coupon.title,
+            style: tt.bodySmall?.copyWith(color: Colors.white70),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white24),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              coupon.code,
+              style: tt.labelSmall?.copyWith(
+                color: Colors.white60,
+                letterSpacing: 1.5,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key});
+  const WelcomeScreen({super.key, this.menuBuilder});
+
+  final MenuScreenBuilder? menuBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -98,87 +210,55 @@ class WelcomeScreen extends StatelessWidget {
           SafeArea(
           child: Column(
             children: [
-              // Top branding area
+              // Video with logo overlaid on top
               Expanded(
-                flex: 5,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.brandMint,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.storefront_rounded,
-                        size: 64,
-                        color: AppTheme.brandGreen,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      'Tasty Bites',
-                      style: tt.displaySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Fresh • Fast • Delicious',
-                      style: tt.titleMedium?.copyWith(
-                        color: Colors.white70,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Call to action
-              Expanded(
-                flex: 4,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Tap below to start your order',
-                      style: tt.titleLarge?.copyWith(color: Colors.white70),
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 580),
-                          child: const Column(
-                            children: [
-                              _OrderTypeButton(type: OrderType.dineIn),
-                            ],
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+                  child: Stack(
+                    children: [
+                      const _VideoPlayer(),
+                      Positioned(
+                        top: 16,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: SvgPicture.asset(
+                            'images/Logo/Group 1.svg',
+                            height: 56,
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
-              // Footer — Powered by Pine Labs
+              // Start Ordering button — outside video
               Padding(
-                padding: const EdgeInsets.only(bottom: 52),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: _OrderTypeButton(type: OrderType.dineIn, menuBuilder: menuBuilder),
+                  ),
+                ),
+              ),
+
+              // Powered by Pine Labs
+              Padding(
+                padding: const EdgeInsets.only(top: 12, bottom: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'Powered by',
-                      style: tt.labelMedium?.copyWith(color: Colors.white54),
+                      style: tt.labelSmall?.copyWith(color: Colors.white54),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(width: 6),
                     SvgPicture.asset(
                       'images/logo/pinelabs_logo.svg',
-                      height: 24,
+                      height: 16,
                       colorFilter: const ColorFilter.mode(Colors.white70, BlendMode.srcIn),
                     ),
                   ],

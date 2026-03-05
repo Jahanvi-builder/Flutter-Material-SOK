@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/cart_controller.dart';
-import '../../services/sound_service.dart';
+import '../../services/haptic_service.dart';
 import 'confirmation_screen.dart';
 
 enum _PaymentMethod { tapToPay, card, qr }
@@ -163,7 +163,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: () {
-                  SoundService.playTap();
+                  HapticService.tap();
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(

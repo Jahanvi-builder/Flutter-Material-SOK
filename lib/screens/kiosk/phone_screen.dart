@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../theme/app_theme.dart';
-import '../../services/sound_service.dart';
+import '../../services/haptic_service.dart';
 
 /// Shows the phone + OTP dialog over whatever screen is currently displayed.
 /// Returns the verified phone number string, or null if the user skipped.
@@ -34,7 +34,7 @@ class _PhoneOtpDialogState extends State<_PhoneOtpDialog> {
   bool get _otpComplete => _otpControllers.every((c) => c.text.length == 1);
 
   void _goToOtp() {
-    SoundService.playTap();
+    HapticService.tap();
     setState(() => _showOtp = true);
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _otpFocusNodes.first.requestFocus(),
@@ -42,12 +42,12 @@ class _PhoneOtpDialogState extends State<_PhoneOtpDialog> {
   }
 
   void _verify() {
-    SoundService.playTap();
+    HapticService.tap();
     Navigator.pop(context, _phoneController.text.trim());
   }
 
   void _skip() {
-    SoundService.playTap();
+    HapticService.tap();
     Navigator.pop(context, null);
   }
 
@@ -109,7 +109,7 @@ class _PhoneOtpDialogState extends State<_PhoneOtpDialog> {
                         otpComplete: _otpComplete,
                         onVerify: _verify,
                         onChangeNumber: () {
-                          SoundService.playTap();
+                          HapticService.tap();
                           setState(() {
                             _showOtp = false;
                             for (final c in _otpControllers) { c.clear(); }

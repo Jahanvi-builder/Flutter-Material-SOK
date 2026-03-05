@@ -32,6 +32,10 @@
   <title>sok_material</title>
   <link rel="manifest" href="manifest.json">
   <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  <script type="module">
+    import { WebHaptics } from './haptics/index.mjs';
+    window.triggerHaptic = (preset) => new WebHaptics().trigger(preset);
+  </script>
 </head>
 <body>
   <!--

@@ -6,6 +6,9 @@ import 'screens/kiosk/welcome_screen.dart';
 import 'screens/m3_showcase_screen.dart';
 import 'theme/app_theme.dart';
 
+/// Global theme notifier — readable and writable from any screen.
+final themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
+
 void main() {
   runApp(const SokApp());
 }
@@ -15,18 +18,23 @@ class SokApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DynamicColorBuilder(
-      builder: (lightDynamic, darkDynamic) {
-        return MaterialApp(
-          title: 'Tasty Bites',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light(),
-          darkTheme: AppTheme.dark(),
-          themeMode: ThemeMode.system,
-          home: const WelcomeScreen(),
-          routes: {
-            '/m3':   (_) => const M3ShowcaseScreen(),
-            '/left': (_) => const LeftNavMenuRoute(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, themeMode, _) {
+        return DynamicColorBuilder(
+          builder: (lightDynamic, darkDynamic) {
+            return MaterialApp(
+              title: 'Tasty Bites',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.light(),
+              darkTheme: AppTheme.dark(),
+              themeMode: themeMode,
+              home: const WelcomeScreen(),
+              routes: {
+                '/m3':   (_) => const M3ShowcaseScreen(),
+                '/left': (_) => const LeftNavMenuRoute(),
+              },
+            );
           },
         );
       },

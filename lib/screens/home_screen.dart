@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'kiosk/menu_screen_qp.dart';
 import 'kiosk/welcome_screen.dart';
 import 'm3_showcase_screen.dart';
 
@@ -31,6 +32,23 @@ class HomeScreen extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _LaunchCard(
+              icon: Icons.qr_code_rounded,
+              color: cs.tertiaryContainer,
+              iconColor: cs.onTertiaryContainer,
+              title: 'Quick Pay',
+              description: 'Menu with bottom bar — quick UPI payment shortcut alongside cart',
+              label: 'Launch Quick Pay',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => WelcomeScreen(
+                    menuBuilder: (cart) => MenuScreenQP(cart: cart),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),

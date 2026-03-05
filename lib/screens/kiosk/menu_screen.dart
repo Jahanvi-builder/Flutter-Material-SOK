@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../data/mock_menu.dart';
+import '../../main.dart' show themeNotifier;
 import '../../models/cart_controller.dart';
 import '../../models/menu_item.dart';
-import '../../services/sound_service.dart';
+import '../../services/haptic_service.dart';
 import 'cart_screen.dart';
 import 'item_detail_sheet.dart';
 import 'phone_screen.dart';
@@ -49,7 +50,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _openDetail(MenuItem item) {
-    SoundService.playTap();
+    HapticService.tap();
     showItemDetail(context, item, widget.cart);
   }
 
@@ -106,6 +107,20 @@ class _MenuScreenState extends State<MenuScreen> {
             tooltip: _useSideNav ? 'Top navigation' : 'Side navigation',
             onPressed: () => setState(() => _useSideNav = !_useSideNav),
           ),
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: themeNotifier,
+            builder: (context, mode, _) => IconButton(
+              icon: Icon(mode == ThemeMode.dark
+                  ? Icons.light_mode_rounded
+                  : Icons.dark_mode_rounded),
+              tooltip: mode == ThemeMode.dark ? 'Light mode' : 'Dark mode',
+              onPressed: () {
+                themeNotifier.value = mode == ThemeMode.light
+                    ? ThemeMode.dark
+                    : ThemeMode.light;
+              },
+            ),
+          ),
           if (_phoneNumber != null)
             Padding(
               padding: const EdgeInsets.only(right: 16),
@@ -131,13 +146,12 @@ class _MenuScreenState extends State<MenuScreen> {
             builder: (context, _) {
               if (widget.cart.isEmpty) return const SizedBox.shrink();
 
-              // Up to 3 item images + optional +N badge
               final allCartItems = widget.cart.items;
               final cartItems = allCartItems.take(2).toList();
               final extraCount = allCartItems.length - 2;
-              final imgSize = 40.0;
-              final overlap = 20.0;
-              final step = imgSize - overlap;
+              const imgSize = 40.0;
+              const overlap = 20.0;
+              const step = imgSize - overlap;
               final totalSlots = cartItems.length + (extraCount > 0 ? 1 : 0);
 
               Widget buildCircle(Widget child) => Container(
@@ -151,8 +165,8 @@ class _MenuScreenState extends State<MenuScreen> {
               );
 
               final slots = [
-                ...cartItems.asMap().entries.map((e) {
-                  final item = e.value.item;
+                ...cartItems.map((ci) {
+                  final item = ci.item;
                   return buildCircle(
                     item.imagePath.isNotEmpty
                         ? Image.asset(item.imagePath, fit: BoxFit.cover,
@@ -167,30 +181,22 @@ class _MenuScreenState extends State<MenuScreen> {
                   );
                 }),
                 if (extraCount > 0)
-                  buildCircle(
-                    ColoredBox(
-                      color: Colors.white,
-                      child: Center(
-                        child: Text(
-                          '+$extraCount',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
+                  buildCircle(ColoredBox(
+                    color: Colors.white,
+                    child: Center(
+                      child: Text('+$extraCount',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87)),
                     ),
-                  ),
+                  )),
               ];
 
               final imagesWidget = SizedBox(
                 width: imgSize + (totalSlots - 1) * step,
                 height: imgSize,
                 child: Stack(
-                  children: slots.asMap().entries.map((e) =>
-                    Positioned(left: e.key * step, child: e.value),
-                  ).toList(),
+                  children: slots.asMap().entries
+                      .map((e) => Positioned(left: e.key * step.toDouble(), child: e.value))
+                      .toList(),
                 ),
               );
 
@@ -198,32 +204,29 @@ class _MenuScreenState extends State<MenuScreen> {
                 scale: 1.2,
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: FloatingActionButton.extended(
-                  heroTag: 'cart_fab',
-                  shape: const StadiumBorder(),
-                  extendedPadding: const EdgeInsets.fromLTRB(8, 16, 20, 16),
-                  onPressed: () {
-                    SoundService.playTap();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => CartScreen(cart: widget.cart)),
-                    );
-                  },
-                  label: Row(
-                    children: [
-                      imagesWidget,
-                      const SizedBox(width: 12),
-                      const Text(
-                        'View Cart',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.chevron_right_rounded, size: 22),
-                    ],
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: FloatingActionButton.extended(
+                    heroTag: 'cart_fab',
+                    shape: const StadiumBorder(),
+                    extendedPadding: const EdgeInsets.fromLTRB(8, 16, 20, 16),
+                    onPressed: () {
+                      HapticService.tap();
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => CartScreen(cart: widget.cart)));
+                    },
+                    label: Row(
+                      children: [
+                        imagesWidget,
+                        const SizedBox(width: 12),
+                        const Text('View Cart',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.chevron_right_rounded, size: 22),
+                      ],
+                    ),
                   ),
                 ),
-              ));
+              );
             },
           );
 
@@ -334,7 +337,7 @@ class _MenuScreenState extends State<MenuScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(32),
-                            onTap: () { SoundService.playTap(); setState(() => _selectedIndex = i); },
+                            onTap: () { HapticService.tap(); setState(() => _selectedIndex = i); },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 150),
                               decoration: BoxDecoration(
@@ -377,15 +380,23 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
             );
 
+            // card radius (12) + grid left padding (16) + 12 = 40
+            const contentCornerRadius = 40.0;
+
             return Row(
               children: [
                 customRail,
                 Expanded(
-                  child: Stack(
-                    children: [
-                      Positioned.fill(child: Column(children: [menuGrid])),
-                      Positioned(bottom: 0, left: 0, right: 0, child: Center(child: cartFab)),
-                    ],
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(contentCornerRadius),
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(child: Column(children: [menuGrid])),
+                        Positioned(bottom: 0, left: 0, right: 0, child: Center(child: cartFab)),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -675,7 +686,7 @@ class _MenuItemCard extends StatelessWidget {
                             if (count == 0) {
                               return FilledButton.tonal(
                                 onPressed: () {
-                                  SoundService.playTap();
+                                  HapticService.tap();
                                   cart.add(item);
                                 },
                                 style: FilledButton.styleFrom(
@@ -708,13 +719,13 @@ class _MenuItemCard extends StatelessWidget {
                                     IconButton(
                                       icon: const Icon(Icons.remove),
                                       constraints: const BoxConstraints.tightFor(width: 56, height: 56),
-                                      onPressed: () { SoundService.playTap(); cart.decrement(cartItem!); },
+                                      onPressed: () { HapticService.tap(); cart.decrement(cartItem!); },
                                     ),
                                     Text('$count', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                                     IconButton(
                                       icon: const Icon(Icons.add),
                                       constraints: const BoxConstraints.tightFor(width: 56, height: 56),
-                                      onPressed: () { SoundService.playTap(); cart.increment(cartItem!); },
+                                      onPressed: () { HapticService.tap(); cart.increment(cartItem!); },
                                     ),
                                   ],
                                 ),

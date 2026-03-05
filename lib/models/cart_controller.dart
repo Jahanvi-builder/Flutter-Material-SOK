@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/coupons.dart';
 import 'cart_item.dart';
 import 'menu_item.dart';
 
@@ -10,6 +11,7 @@ class CartController extends ChangeNotifier {
 
   final OrderType orderType;
   final List<CartItem> _items = [];
+  Coupon? _appliedCoupon;
 
   List<CartItem> get items => List.unmodifiable(_items);
   bool get isEmpty => _items.isEmpty;
@@ -18,7 +20,19 @@ class CartController extends ChangeNotifier {
   double get discount => _items.fold(0.0, (sum, e) => sum +
       (e.item.originalPrice != null ? (e.item.originalPrice! - e.item.price) * e.quantity : 0.0));
   double get tax => subtotal * 0.05;
-  double get total => subtotal + tax;
+  Coupon? get appliedCoupon => _appliedCoupon;
+  double get couponDiscount => _appliedCoupon?.savings(subtotal) ?? 0.0;
+  double get total => subtotal + tax - couponDiscount;
+
+  void applyCoupon(Coupon coupon) {
+    _appliedCoupon = coupon;
+    notifyListeners();
+  }
+
+  void removeCoupon() {
+    _appliedCoupon = null;
+    notifyListeners();
+  }
 
   void add(MenuItem item, {String? size, List<String> addOns = const [], int quantity = 1}) {
     final idx = _items.indexWhere(
@@ -48,6 +62,7 @@ class CartController extends ChangeNotifier {
 
   void clear() {
     _items.clear();
+    _appliedCoupon = null;
     notifyListeners();
   }
 }

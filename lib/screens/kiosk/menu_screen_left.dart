@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/mock_menu.dart';
 import '../../models/cart_controller.dart';
 import '../../models/menu_item.dart';
-import '../../services/sound_service.dart';
+import '../../services/haptic_service.dart';
 import 'cart_screen.dart';
 import 'item_detail_sheet.dart';
 
@@ -100,7 +100,7 @@ class _MenuScreenLeftState extends State<MenuScreenLeft> {
   }
 
   void _openDetail(MenuItem item) {
-    SoundService.playTap();
+    HapticService.tap();
     showItemDetail(context, item, widget.cart);
   }
 
@@ -235,7 +235,7 @@ class _MenuScreenLeftState extends State<MenuScreenLeft> {
           if (widget.cart.isEmpty) return const SizedBox.shrink();
           return FloatingActionButton.extended(
             onPressed: () {
-              SoundService.playTap();
+              HapticService.tap();
               Navigator.push(
                 context,
                 MaterialPageRoute(

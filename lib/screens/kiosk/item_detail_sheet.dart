@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/cart_controller.dart';
 import '../../models/menu_item.dart';
-import '../../services/sound_service.dart';
+import '../../services/haptic_service.dart';
 
 Color _starColor(double rating) {
   if (rating >= 4.5) return const Color(0xFF2E7D32); // dark green
@@ -309,7 +309,7 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                               icon: const Icon(Icons.remove),
                               constraints: const BoxConstraints.tightFor(width: 56, height: 56),
                               onPressed: _quantity > 1
-                                  ? () { SoundService.playTap(); setState(() => _quantity--); }
+                                  ? () { HapticService.tap(); setState(() => _quantity--); }
                                   : null,
                             ),
                             SizedBox(
@@ -323,7 +323,7 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                             IconButton(
                               icon: const Icon(Icons.add),
                               constraints: const BoxConstraints.tightFor(width: 56, height: 56),
-                              onPressed: () { SoundService.playTap(); setState(() => _quantity++); },
+                              onPressed: () { HapticService.tap(); setState(() => _quantity++); },
                             ),
                           ],
                         ),
@@ -335,7 +335,7 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                     Expanded(
                       child: FilledButton.tonal(
                         onPressed: () {
-                          SoundService.playTap();
+                          HapticService.tap();
                           widget.cart.add(
                             item,
                             size: _selectedSize,

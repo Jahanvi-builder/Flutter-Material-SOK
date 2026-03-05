@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/cart_controller.dart';
 import '../../models/cart_item.dart';
+import '../../services/haptic_service.dart';
 import 'welcome_screen.dart';
 
 class ConfirmationScreen extends StatefulWidget {
@@ -31,6 +32,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
   late final List<CartItem> _snapshot;
   late final double _subtotal;
   late final double _discount;
+  late final double _couponDiscount;
+  late final String? _couponCode;
   late final double _tax;
   late final double _total;
   late final String _orderType;
@@ -51,6 +54,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
     _snapshot = List.from(widget.cart.items);
     _subtotal = widget.cart.subtotal;
     _discount = widget.cart.discount;
+    _couponDiscount = widget.cart.couponDiscount;
+    _couponCode = widget.cart.appliedCoupon?.code;
     _tax = widget.cart.tax;
     _total = widget.cart.total;
     _orderType = widget.cart.orderType == OrderType.dineIn ? 'Dine In' : 'Take Away';
@@ -72,6 +77,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.cart.clear();
       if (mounted) {
+        HapticService.paymentSuccess();
         _confettiLeft.play();
         _confettiRight.play();
       }
@@ -186,6 +192,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                         items: _snapshot,
                         subtotal: _subtotal,
                         discount: _discount,
+                        couponDiscount: _couponDiscount,
+                        couponCode: _couponCode,
                         tax: _tax,
                         total: _total,
                         paymentMethod: widget.paymentMethod,
@@ -248,6 +256,8 @@ class _ReceiptCard extends StatelessWidget {
     required this.items,
     required this.subtotal,
     required this.discount,
+    required this.couponDiscount,
+    required this.couponCode,
     required this.tax,
     required this.total,
     required this.paymentMethod,
@@ -259,6 +269,8 @@ class _ReceiptCard extends StatelessWidget {
   final List<CartItem> items;
   final double subtotal;
   final double discount;
+  final double couponDiscount;
+  final String? couponCode;
   final double tax;
   final double total;
   final String paymentMethod;
@@ -383,7 +395,16 @@ class _ReceiptCard extends StatelessWidget {
                 _ReceiptRow('Subtotal', '₹${subtotal.round()}', tt),
                 if (discount > 0) ...[
                   const SizedBox(height: 4),
-                  _ReceiptRow('Discount', '−₹${discount.round()}', tt, color: Colors.green.shade600),
+                  _ReceiptRow('Item savings', '−₹${discount.round()}', tt, color: Colors.green.shade600),
+                ],
+                if (couponDiscount > 0) ...[
+                  const SizedBox(height: 4),
+                  _ReceiptRow(
+                    couponCode != null ? 'Coupon ($couponCode)' : 'Coupon',
+                    '−₹${couponDiscount.round()}',
+                    tt,
+                    color: Colors.green.shade600,
+                  ),
                 ],
                 const SizedBox(height: 4),
                 _ReceiptRow('GST (5%)', '₹${tax.round()}', tt),

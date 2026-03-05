@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../models/cart_controller.dart';
-import '../../services/sound_service.dart';
+import '../../services/haptic_service.dart';
 import 'confirmation_screen.dart';
 
 class QrPaymentScreen extends StatefulWidget {
@@ -42,7 +42,7 @@ class _QrPaymentScreenState extends State<QrPaymentScreen> {
     // Auto-navigate when payment is detected (10-second demo simulation)
     _paymentTimer = Timer(const Duration(seconds: 10), () {
       if (mounted) {
-        SoundService.playTap();
+        HapticService.paymentSuccess();
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

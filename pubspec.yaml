@@ -37,9 +37,9 @@ dependencies:
   dynamic_color: ^1.8.1
   google_fonts: ^8.0.2
   flutter_svg: ^2.0.10+1
-  audioplayers: ^6.1.0
   qr_flutter: ^4.1.0
   confetti: ^0.8.0
+  video_player: ^2.9.2
 
 dev_dependencies:
   flutter_test:
@@ -65,8 +65,8 @@ flutter:
 
   assets:
     - images/logo/
+    - images/Logo/
     - images/splash/
-    - sounds/
     - images/Food/Quick bites/
     - images/Food/Chinese/
     - images/Food/Beverages/
@@ -74,6 +74,7 @@ flutter:
     - images/Food/SouthIndian/
     - images/Food/Combos/
     - images/UPI Logos/
+    - Video/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
