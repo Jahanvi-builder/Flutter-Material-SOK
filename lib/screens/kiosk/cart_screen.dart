@@ -6,9 +6,9 @@ import '../../data/coupons.dart';
 import '../../models/cart_controller.dart';
 import '../../models/cart_item.dart';
 import '../../services/haptic_service.dart';
-import 'confirmation_screen.dart';
+import 'item_detail_sheet.dart';
+import 'post_payment_flow.dart';
 import 'qr_payment_screen.dart';
-
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, required this.cart});
@@ -21,9 +21,13 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   static const _methods = [
-    (icon: Icons.qr_code_scanner_rounded, label: 'Pay with UPI',         isQr: true),
-    (icon: Icons.contactless_rounded,     label: 'Tap to Pay',          isQr: false),
-    (icon: Icons.credit_card_rounded,     label: 'Credit / Debit Card', isQr: false),
+    (icon: Icons.qr_code_scanner_rounded, label: 'Pay with UPI', isQr: true),
+    (icon: Icons.contactless_rounded, label: 'Tap to Pay', isQr: false),
+    (
+      icon: Icons.credit_card_rounded,
+      label: 'Credit / Debit Card',
+      isQr: false,
+    ),
   ];
 
   CartController get cart => widget.cart;
@@ -58,18 +62,28 @@ class _CartScreenState extends State<CartScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_bag_outlined, size: 80, color: cs.outline),
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 80,
+                    color: cs.outline,
+                  ),
                   const SizedBox(height: 16),
                   Text('Your order is empty', style: tt.titleLarge),
                   const SizedBox(height: 8),
-                  Text('Add items from the menu', style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+                  Text(
+                    'Add items from the menu',
+                    style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  ),
                   const SizedBox(height: 24),
                   FilledButton.tonal(
                     onPressed: () => Navigator.pop(context),
                     style: FilledButton.styleFrom(
                       fixedSize: const Size(200, 56),
                       iconSize: 22,
-                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     child: const Text('Browse Menu'),
                   ),
@@ -81,94 +95,115 @@ class _CartScreenState extends State<CartScreen> {
           return Center(
             child: SingleChildScrollView(
               child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Column(
-                children: [
-                  // Items list
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
-                    itemCount: cart.items.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 4),
-                    itemBuilder: (context, i) => _CartItemTile(
-                      cartItem: cart.items[i],
-                      cart: cart,
+                constraints: const BoxConstraints(maxWidth: 640),
+                child: Column(
+                  children: [
+                    // Items list
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(16),
+                      itemCount: cart.items.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 4),
+                      itemBuilder: (context, i) =>
+                          _CartItemTile(cartItem: cart.items[i], cart: cart),
                     ),
-                  ),
 
-                  // Coupon section
-                  _CouponSection(cart: cart),
+                    // Coupon section
+                    _CouponSection(cart: cart),
 
-                  // Order summary + payment
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    child: SafeArea(
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Column(
+                    // Order summary + payment
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                      child: SafeArea(
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Divider(
+                                      color: cs.outlineVariant.withAlpha(120),
+                                    ),
+                                  ),
+                                  _SummaryRow(
+                                    'Subtotal',
+                                    '₹${cart.subtotal.round()}',
+                                    tt,
+                                  ),
+                                  if (cart.discount > 0) ...[
+                                    const SizedBox(height: 6),
+                                    _SummaryRow(
+                                      'Item savings',
+                                      '−₹${cart.discount.round()}',
+                                      tt,
+                                      color: Colors.green.shade600,
+                                    ),
+                                  ],
+                                  if (cart.couponDiscount > 0) ...[
+                                    const SizedBox(height: 6),
+                                    _SummaryRow(
+                                      'Coupon (${cart.appliedCoupon!.code})',
+                                      '−₹${cart.couponDiscount.round()}',
+                                      tt,
+                                      color: Colors.green.shade600,
+                                    ),
+                                  ],
+                                  const SizedBox(height: 6),
+                                  _SummaryRow(
+                                    'GST (5%)',
+                                    '₹${cart.tax.round()}',
+                                    tt,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    child: Divider(
+                                      color: cs.outlineVariant.withAlpha(120),
+                                    ),
+                                  ),
+                                  _SummaryRow(
+                                    'Total',
+                                    '₹${cart.total.round()}',
+                                    tt,
+                                    bold: true,
+                                    color: cs.primary,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Payment buttons — UPI full-width, card methods side by side
+                            _PaymentButton(method: _methods[0], cart: cart),
+                            const SizedBox(height: 10),
+                            Row(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: Divider(color: cs.outlineVariant.withAlpha(120)),
-                                ),
-                                _SummaryRow('Subtotal', '₹${cart.subtotal.round()}', tt),
-                                if (cart.discount > 0) ...[
-                                  const SizedBox(height: 6),
-                                  _SummaryRow(
-                                    'Item savings',
-                                    '−₹${cart.discount.round()}',
-                                    tt,
-                                    color: Colors.green.shade600,
+                                Expanded(
+                                  child: _PaymentButton(
+                                    method: _methods[1],
+                                    cart: cart,
                                   ),
-                                ],
-                                if (cart.couponDiscount > 0) ...[
-                                  const SizedBox(height: 6),
-                                  _SummaryRow(
-                                    'Coupon (${cart.appliedCoupon!.code})',
-                                    '−₹${cart.couponDiscount.round()}',
-                                    tt,
-                                    color: Colors.green.shade600,
-                                  ),
-                                ],
-                                const SizedBox(height: 6),
-                                _SummaryRow('GST (5%)', '₹${cart.tax.round()}', tt),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  child: Divider(color: cs.outlineVariant.withAlpha(120)),
                                 ),
-                                _SummaryRow(
-                                  'Total',
-                                  '₹${cart.total.round()}',
-                                  tt,
-                                  bold: true,
-                                  color: cs.primary,
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: _PaymentButton(
+                                    method: _methods[2],
+                                    cart: cart,
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Payment buttons — UPI full-width, card methods side by side
-                          _PaymentButton(method: _methods[0], cart: cart),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(child: _PaymentButton(method: _methods[1], cart: cart)),
-                              const SizedBox(width: 10),
-                              Expanded(child: _PaymentButton(method: _methods[2], cart: cart)),
-                            ],
-                          ),
-
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             ),
           );
         },
@@ -247,13 +282,34 @@ class _CartItemTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.name, style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
-                  if (cartItem.size != null)
-                    Text(cartItem.size!, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-                  if (cartItem.addOns.isNotEmpty)
+                  Text(
+                    item.name,
+                    style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                  ),
+                  if (cartItem.hasCustomizations)
                     Text(
-                      '+ ${cartItem.addOns.join(', ')}',
+                      cartItem.customizationSummary.join(' · '),
                       style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  if (item.isCustomizable)
+                    TextButton(
+                      onPressed: () {
+                        HapticService.tap();
+                        showItemDetail(
+                          context,
+                          item,
+                          cart,
+                          editingCartItem: cartItem,
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 28),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                        alignment: Alignment.centerLeft,
+                      ),
+                      child: const Text('Edit'),
                     ),
                 ],
               ),
@@ -264,9 +320,14 @@ class _CartItemTile extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.remove, size: 16),
-                  onPressed: () { HapticService.tap(); cart.decrement(cartItem); },
+                  onPressed: () {
+                    HapticService.tap();
+                    cart.decrement(cartItem);
+                  },
                   style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerLow,
                     minimumSize: const Size(32, 32),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -281,9 +342,14 @@ class _CartItemTile extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.add, size: 16),
-                  onPressed: () { HapticService.tap(); cart.increment(cartItem); },
+                  onPressed: () {
+                    HapticService.tap();
+                    cart.increment(cartItem);
+                  },
                   style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerLow,
                     minimumSize: const Size(32, 32),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -325,7 +391,13 @@ class _CartItemTile extends StatelessWidget {
 }
 
 class _SummaryRow extends StatelessWidget {
-  const _SummaryRow(this.label, this.value, this.tt, {this.bold = false, this.color});
+  const _SummaryRow(
+    this.label,
+    this.value,
+    this.tt, {
+    this.bold = false,
+    this.color,
+  });
 
   final String label;
   final String value;
@@ -372,11 +444,16 @@ class _CouponSection extends StatelessWidget {
             children: [
               Icon(Icons.local_offer_outlined, size: 15, color: cs.primary),
               const SizedBox(width: 6),
-              Text('Coupons & Offers',
-                  style: tt.labelLarge?.copyWith(color: cs.onSurface)),
+              Text(
+                'Coupons & Offers',
+                style: tt.labelLarge?.copyWith(color: cs.onSurface),
+              ),
               const Spacer(),
               TextButton(
-                onPressed: () { HapticService.tap(); _showCouponsSheet(context, cart); },
+                onPressed: () {
+                  HapticService.tap();
+                  _showCouponsSheet(context, cart);
+                },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -433,18 +510,27 @@ class _AppliedCouponChip extends StatelessWidget {
                 _CookieBadge(
                   size: 24,
                   color: cs.primary,
-                  child: Icon(Icons.percent_rounded,
-                      color: cs.primaryContainer, size: 13),
+                  child: Icon(
+                    Icons.percent_rounded,
+                    color: cs.primaryContainer,
+                    size: 13,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(coupon.title,
-                      style: tt.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  child: Text(
+                    coupon.title,
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded, size: 18),
-                  onPressed: () { HapticService.tap(); cart.removeCoupon(); },
+                  onPressed: () {
+                    HapticService.tap();
+                    cart.removeCoupon();
+                  },
                   style: IconButton.styleFrom(
                     minimumSize: const Size(36, 36),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -464,16 +550,20 @@ class _AppliedCouponChip extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 36),
               child: CustomPaint(
-                painter: _DashedRoundedBorder(
-                    color: cs.primary, radius: 10),
+                painter: _DashedRoundedBorder(color: cs.primary, radius: 10),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 7),
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.content_cut_rounded,
-                          size: 14, color: cs.primary),
+                      Icon(
+                        Icons.content_cut_rounded,
+                        size: 14,
+                        color: cs.primary,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         coupon.code,
@@ -514,7 +604,10 @@ class _AddCouponRow extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () { HapticService.tap(); _showCouponsSheet(context, cart); },
+        onTap: () {
+          HapticService.tap();
+          _showCouponsSheet(context, cart);
+        },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           child: Row(
@@ -522,17 +615,24 @@ class _AddCouponRow extends StatelessWidget {
               _CookieBadge(
                 size: 24,
                 color: cs.surfaceContainerHigh,
-                child: Icon(Icons.percent_rounded,
-                    color: cs.onSurfaceVariant, size: 13),
+                child: Icon(
+                  Icons.percent_rounded,
+                  color: cs.onSurfaceVariant,
+                  size: 13,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text('Apply a coupon',
-                    style: tt.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700)),
+                child: Text(
+                  'Apply a coupon',
+                  style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
               ),
-              Icon(Icons.chevron_right_rounded,
-                  size: 18, color: cs.onSurfaceVariant),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: cs.onSurfaceVariant,
+              ),
             ],
           ),
         ),
@@ -572,8 +672,10 @@ Widget _couponsHeader(BuildContext context) {
       Icon(Icons.local_offer_rounded, color: cs.primary, size: 20),
       const SizedBox(width: 8),
       Expanded(
-        child: Text('Available Offers',
-            style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+        child: Text(
+          'Available Offers',
+          style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
       ),
       IconButton(
         icon: const Icon(Icons.close_rounded),
@@ -656,7 +758,8 @@ class _CouponsSheet extends StatelessWidget {
           children: [
             const SizedBox(height: 10),
             Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
                 color: cs.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
@@ -718,12 +821,12 @@ class _CouponCard extends StatelessWidget {
                   children: [
                     _CookieBadge(
                       size: 24,
-                      color: eligible
-                          ? cs.primary
-                          : cs.surfaceContainerHigh,
+                      color: eligible ? cs.primary : cs.surfaceContainerHigh,
                       child: Icon(
                         Icons.percent_rounded,
-                        color: eligible ? cs.primaryContainer : cs.onSurfaceVariant,
+                        color: eligible
+                            ? cs.primaryContainer
+                            : cs.onSurfaceVariant,
                         size: 13,
                       ),
                     ),
@@ -748,7 +851,10 @@ class _CouponCard extends StatelessWidget {
                           minimumSize: const Size(88, 44),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           alignment: Alignment.center,
-                          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          textStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         child: const Text('Remove'),
                       )
@@ -765,7 +871,10 @@ class _CouponCard extends StatelessWidget {
                           minimumSize: const Size(88, 44),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           alignment: Alignment.center,
-                          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          textStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         child: const Text('Apply'),
                       ),
@@ -781,8 +890,9 @@ class _CouponCard extends StatelessWidget {
                         )
                       : Text(
                           'Min order ₹${coupon.minOrder.round()} required',
-                          style: tt.bodyMedium
-                              ?.copyWith(color: cs.onSurfaceVariant),
+                          style: tt.bodyMedium?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
                         ),
                 ),
 
@@ -790,50 +900,50 @@ class _CouponCard extends StatelessWidget {
 
                 // Code pill + View Details toggle
                 Padding(
-                padding: const EdgeInsets.only(left: 36),
-                child: Row(
-                  children: [
-                    CustomPaint(
-                      painter: _DashedRoundedBorder(
-                        color: eligible ? cs.primary : cs.outlineVariant,
-                        radius: 10,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 7),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.content_cut_rounded,
-                              size: 14,
-                              color: eligible
-                                  ? cs.primary
-                                  : cs.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              coupon.code,
-                              style: tt.labelLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
+                  padding: const EdgeInsets.only(left: 36),
+                  child: Row(
+                    children: [
+                      CustomPaint(
+                        painter: _DashedRoundedBorder(
+                          color: eligible ? cs.primary : cs.outlineVariant,
+                          radius: 10,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 7,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.content_cut_rounded,
+                                size: 14,
                                 color: eligible
                                     ? cs.primary
                                     : cs.onSurfaceVariant,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              Text(
+                                coupon.code,
+                                style: tt.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.8,
+                                  color: eligible
+                                      ? cs.primary
+                                      : cs.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                ),
-
               ],
             ),
           ),
-
         ],
       ),
     );
@@ -963,7 +1073,10 @@ class _PaymentButton extends StatelessWidget {
           MaterialPageRoute(
             builder: (_) => method.isQr
                 ? QrPaymentScreen(cart: cart)
-                : ConfirmationScreen(cart: cart, paymentMethod: method.label),
+                : postPaymentDestination(
+                    cart: cart,
+                    paymentMethod: method.label,
+                  ),
           ),
         );
       },
@@ -971,8 +1084,11 @@ class _PaymentButton extends StatelessWidget {
       label: Row(
         children: [
           Expanded(child: Text(method.label)),
-          Icon(Icons.chevron_right_rounded, size: 18,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 18,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ],
       ),
       style: FilledButton.styleFrom(

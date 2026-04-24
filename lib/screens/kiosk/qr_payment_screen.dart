@@ -6,7 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../models/cart_controller.dart';
 import '../../services/haptic_service.dart';
-import 'confirmation_screen.dart';
+import 'post_payment_flow.dart';
 
 class QrPaymentScreen extends StatefulWidget {
   const QrPaymentScreen({super.key, required this.cart});
@@ -46,7 +46,8 @@ class _QrPaymentScreenState extends State<QrPaymentScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => ConfirmationScreen(cart: widget.cart, paymentMethod: 'UPI'),
+            builder: (_) =>
+                postPaymentDestination(cart: widget.cart, paymentMethod: 'UPI'),
           ),
         );
       }
@@ -103,7 +104,9 @@ class _QrPaymentScreenState extends State<QrPaymentScreen> {
                       const SizedBox(width: 6),
                       Text(
                         'Awaiting payment…',
-                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -148,8 +151,10 @@ class _QrPaymentScreenState extends State<QrPaymentScreen> {
                           ),
                           child: SvgPicture.asset(
                             'images/UPI Logos/Pine.svg',
-                            colorFilter:
-                                ColorFilter.mode(dotColor, BlendMode.srcIn),
+                            colorFilter: ColorFilter.mode(
+                              dotColor,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ],
@@ -180,7 +185,9 @@ class _QrPaymentScreenState extends State<QrPaymentScreen> {
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(56),
                         textStyle: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   )
@@ -191,13 +198,17 @@ class _QrPaymentScreenState extends State<QrPaymentScreen> {
                       Icon(
                         Icons.timer_outlined,
                         size: 16,
-                        color: _secondsLeft < 60 ? cs.error : cs.onSurfaceVariant,
+                        color: _secondsLeft < 60
+                            ? cs.error
+                            : cs.onSurfaceVariant,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Expires in $_timerLabel',
                         style: tt.bodySmall?.copyWith(
-                          color: _secondsLeft < 60 ? cs.error : cs.onSurfaceVariant,
+                          color: _secondsLeft < 60
+                              ? cs.error
+                              : cs.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -216,8 +227,7 @@ class _QrPaymentScreenState extends State<QrPaymentScreen> {
                   children: const [
                     _AppLogo('images/UPI Logos/googlepay-circle.svg', 'GPay'),
                     SizedBox(width: 16),
-                    _AppLogo(
-                        'images/UPI Logos/phonepe-circle.svg', 'PhonePe'),
+                    _AppLogo('images/UPI Logos/phonepe-circle.svg', 'PhonePe'),
                     SizedBox(width: 16),
                     _AppLogo('images/UPI Logos/paytm-circle.svg', 'Paytm'),
                     SizedBox(width: 16),
@@ -258,8 +268,7 @@ class _AppLogo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(label,
-            style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+        Text(label, style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
       ],
     );
   }

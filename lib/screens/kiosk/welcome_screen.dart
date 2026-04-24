@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../data/coupons.dart';
 import '../../models/cart_controller.dart';
 import '../../services/haptic_service.dart';
 import '../../theme/app_theme.dart';
@@ -11,9 +10,13 @@ import 'menu_screen.dart';
 typedef MenuScreenBuilder = Widget Function(CartController cart);
 
 extension on OrderType {
-  String get label => this == OrderType.dineIn ? 'Start Ordering' : 'Take Away';
-  IconData get icon =>
-      this == OrderType.dineIn ? Icons.restaurant_rounded : Icons.takeout_dining_rounded;
+  String get label => this == OrderType.dineIn ? 'Dine In' : 'Take Away';
+  String get subtitle => this == OrderType.dineIn
+      ? 'Order and enjoy at your table'
+      : 'We\'ll pack it up for you';
+  IconData get icon => this == OrderType.dineIn
+      ? Icons.restaurant_rounded
+      : Icons.takeout_dining_rounded;
 }
 
 class _OrderTypeButton extends StatelessWidget {
@@ -34,22 +37,34 @@ class _OrderTypeButton extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) {
-                final cart = CartController(orderType: type);
-                return menuBuilder != null ? menuBuilder!(cart) : MenuScreen(cart: cart);
-              },
+              final cart = CartController(orderType: type);
+              return menuBuilder != null
+                  ? menuBuilder!(cart)
+                  : MenuScreen(cart: cart);
+            },
           ),
         );
       },
       borderRadius: BorderRadius.circular(24),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 28),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         decoration: BoxDecoration(
           color: cs.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
           children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: cs.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(type.icon, size: 28, color: cs.onPrimaryContainer),
+            ),
+            const SizedBox(width: 18),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,19 +72,22 @@ class _OrderTypeButton extends StatelessWidget {
                 children: [
                   Text(
                     type.label,
-                    style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w500),
+                    style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                   ),
+                  const SizedBox(height: 2),
                   Text(
-                    type == OrderType.dineIn
-                        ? 'Order and enjoy at your table'
-                        : 'We\'ll pack it up for you',
+                    type.subtitle,
                     style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 12),
-            Icon(Icons.arrow_forward_ios_rounded, size: 20, color: cs.onSurfaceVariant),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 20,
+              color: cs.onSurfaceVariant,
+            ),
           ],
         ),
       ),
@@ -133,62 +151,6 @@ class _VideoPlayerState extends State<_VideoPlayer> {
   }
 }
 
-class _OfferCard extends StatelessWidget {
-  const _OfferCard({required this.coupon});
-
-  final Coupon coupon;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-    return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(25),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withAlpha(50)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            coupon.shortLabel,
-            style: tt.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            coupon.title,
-            style: tt.bodySmall?.copyWith(color: Colors.white70),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.white24),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              coupon.code,
-              style: tt.labelSmall?.copyWith(
-                color: Colors.white60,
-                letterSpacing: 1.5,
-                fontFamily: 'monospace',
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key, this.menuBuilder});
 
@@ -197,6 +159,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final isWide = MediaQuery.sizeOf(context).width >= 760;
 
     return Scaffold(
       body: Stack(
@@ -208,65 +171,103 @@ class WelcomeScreen extends StatelessWidget {
           ),
           Container(color: AppTheme.brandGreen.withAlpha(210)),
           SafeArea(
-          child: Column(
-            children: [
-              // Video with logo overlaid on top
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
-                  child: Stack(
-                    children: [
-                      const _VideoPlayer(),
-                      Positioned(
-                        top: 16,
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child: SvgPicture.asset(
-                            'images/Logo/Group 1.svg',
-                            height: 56,
-                            fit: BoxFit.contain,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+                    child: Stack(
+                      children: [
+                        const _VideoPlayer(),
+                        Positioned(
+                          top: 16,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: SvgPicture.asset(
+                              'images/Logo/Group 1.svg',
+                              height: 56,
+                              fit: BoxFit.contain,
+                            ),
                           ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Tap below to start your order',
+                        style: tt.titleLarge?.copyWith(color: Colors.white70),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 14),
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 720),
+                          child: isWide
+                              ? Row(
+                                  children: [
+                                    Expanded(
+                                      child: _OrderTypeButton(
+                                        type: OrderType.dineIn,
+                                        menuBuilder: menuBuilder,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _OrderTypeButton(
+                                        type: OrderType.takeAway,
+                                        menuBuilder: menuBuilder,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  children: [
+                                    _OrderTypeButton(
+                                      type: OrderType.dineIn,
+                                      menuBuilder: menuBuilder,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _OrderTypeButton(
+                                      type: OrderType.takeAway,
+                                      menuBuilder: menuBuilder,
+                                    ),
+                                  ],
+                                ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-
-              // Start Ordering button — outside video
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 480),
-                    child: _OrderTypeButton(type: OrderType.dineIn, menuBuilder: menuBuilder),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Powered by',
+                        style: tt.labelSmall?.copyWith(color: Colors.white54),
+                      ),
+                      const SizedBox(width: 6),
+                      SvgPicture.asset(
+                        'images/logo/pinelabs_logo.svg',
+                        height: 16,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white70,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-
-              // Powered by Pine Labs
-              Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Powered by',
-                      style: tt.labelSmall?.copyWith(color: Colors.white54),
-                    ),
-                    const SizedBox(width: 6),
-                    SvgPicture.asset(
-                      'images/logo/pinelabs_logo.svg',
-                      height: 16,
-                      colorFilter: const ColorFilter.mode(Colors.white70, BlendMode.srcIn),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ],
       ),
     );

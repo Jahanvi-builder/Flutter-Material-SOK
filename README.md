@@ -90,6 +90,31 @@ flutter build ios       # iOS (requires Xcode)
 flutter build web       # Web
 ```
 
+## Deploy to Vercel
+
+This repo is set up to deploy the Flutter web build to Vercel.
+
+1. Run local checks:
+
+   ```bash
+   flutter analyze
+   flutter test
+   flutter build web --release
+   ```
+
+2. Import the repo into Vercel.
+3. In Vercel project settings, use:
+
+   ```text
+   Framework Preset: Other
+   Build Command: ./scripts/vercel-build.sh
+   Output Directory: build/web
+   ```
+
+`vercel.json` already includes the Flutter SPA rewrite to `index.html`. The build script bootstraps Flutter in the Vercel environment if it is not preinstalled, then runs `flutter pub get` and `flutter build web --release`.
+
+After the first deploy, validate that images, SVGs, video, fonts, filters, cart flow, and page refreshes all work on the hosted URL.
+
 ## Platform Notes
 
 - **Android** — predictive back gesture (`PredictiveBackPageTransitionsBuilder`) + dynamic color

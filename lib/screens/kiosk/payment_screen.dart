@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/cart_controller.dart';
 import '../../services/haptic_service.dart';
-import 'confirmation_screen.dart';
+import 'post_payment_flow.dart';
 
 enum _PaymentMethod { tapToPay, card, qr }
 
@@ -58,13 +58,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   padding: const EdgeInsets.all(20),
                   child: Row(
                     children: [
-                      Icon(Icons.receipt_long_outlined, size: 32, color: cs.primary),
+                      Icon(
+                        Icons.receipt_long_outlined,
+                        size: 32,
+                        color: cs.primary,
+                      ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Order Total', style: tt.labelLarge?.copyWith(color: cs.onSurfaceVariant)),
+                            Text(
+                              'Order Total',
+                              style: tt.labelLarge?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
                             Text(
                               '₹${widget.cart.total.round()}',
                               style: tt.headlineMedium?.copyWith(
@@ -77,7 +86,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                       Text(
                         '${widget.cart.itemCount} item${widget.cart.itemCount == 1 ? '' : 's'}',
-                        style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                        style: tt.bodyMedium?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -125,13 +136,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   child: Icon(
                                     m.icon,
                                     size: 28,
-                                    color: isSelected ? cs.onPrimaryContainer : cs.onSurfaceVariant,
+                                    color: isSelected
+                                        ? cs.onPrimaryContainer
+                                        : cs.onSurfaceVariant,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         m.title,
@@ -143,13 +157,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       const SizedBox(height: 2),
                                       Text(
                                         m.subtitle,
-                                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                                        style: tt.bodySmall?.copyWith(
+                                          color: cs.onSurfaceVariant,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
                                 if (isSelected)
-                                  Icon(Icons.check_circle_rounded, color: cs.primary),
+                                  Icon(
+                                    Icons.check_circle_rounded,
+                                    color: cs.primary,
+                                  ),
                               ],
                             ),
                           ),
@@ -167,7 +186,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ConfirmationScreen(cart: widget.cart),
+                      builder: (_) => postPaymentDestination(
+                        cart: widget.cart,
+                        paymentMethod: 'Paid',
+                      ),
                     ),
                   );
                 },
@@ -175,7 +197,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 label: Text('Confirm Payment · ₹${widget.cart.total.round()}'),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],

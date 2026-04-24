@@ -37,6 +37,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
   late final double _tax;
   late final double _total;
   late final String _orderType;
+  late final String? _tableToken;
   late final ConfettiController _confettiLeft;
   late final ConfettiController _confettiRight;
 
@@ -44,11 +45,25 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
   void initState() {
     super.initState();
     final now = DateTime.now();
-    final months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     final h = now.hour % 12 == 0 ? 12 : now.hour % 12;
     final m = now.minute.toString().padLeft(2, '0');
     final ampm = now.hour >= 12 ? 'PM' : 'AM';
-    _dateTime = '${now.day} ${months[now.month - 1]} ${now.year}  ·  $h:$m $ampm';
+    _dateTime =
+        '${now.day} ${months[now.month - 1]} ${now.year}  ·  $h:$m $ampm';
 
     _orderNumber = (1000 + Random().nextInt(8999)).toString();
     _snapshot = List.from(widget.cart.items);
@@ -58,13 +73,19 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
     _couponCode = widget.cart.appliedCoupon?.code;
     _tax = widget.cart.tax;
     _total = widget.cart.total;
-    _orderType = widget.cart.orderType == OrderType.dineIn ? 'Dine In' : 'Take Away';
+    _orderType = widget.cart.orderType == OrderType.dineIn
+        ? 'Dine In'
+        : 'Take Away';
+    _tableToken = widget.cart.tableToken;
 
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _scaleAnim = CurvedAnimation(parent: _animController, curve: Curves.elasticOut);
+    _scaleAnim = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.elasticOut,
+    );
     _tickAnim = CurvedAnimation(
       parent: _animController,
       curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
@@ -136,12 +157,16 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                         const SizedBox(height: 16),
                         Text(
                           'Order Placed!',
-                          style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.w500),
+                          style: tt.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Your order is being prepared · 10–15 min',
-                          style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
+                          _statusMessage,
+                          style: tt.bodyLarge?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 20),
@@ -151,26 +176,36 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             FilledButton.tonalIcon(
                               onPressed: () => Navigator.pushAndRemoveUntil(
                                 context,
-                                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const WelcomeScreen(),
+                                ),
                                 (route) => false,
                               ),
                               icon: const Icon(Icons.refresh_rounded),
                               label: const Text('New Order'),
                               style: FilledButton.styleFrom(
                                 fixedSize: const Size(164, 52),
-                                textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                textStyle: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             FilledButton.tonal(
                               onPressed: () => Navigator.pushAndRemoveUntil(
                                 context,
-                                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const WelcomeScreen(),
+                                ),
                                 (route) => false,
                               ),
                               style: FilledButton.styleFrom(
                                 fixedSize: const Size(164, 52),
-                                textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                textStyle: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                               child: const Text('End Session'),
                             ),
@@ -189,6 +224,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                         orderNumber: _orderNumber,
                         dateTime: _dateTime,
                         orderType: _orderType,
+                        tableToken: _tableToken,
                         items: _snapshot,
                         subtotal: _subtotal,
                         discount: _discount,
@@ -217,8 +253,11 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
               minBlastForce: 25,
               gravity: 0.2,
               colors: [
-                cs.primary, cs.secondary, cs.tertiary,
-                cs.primaryContainer, cs.secondaryContainer,
+                cs.primary,
+                cs.secondary,
+                cs.tertiary,
+                cs.primaryContainer,
+                cs.secondaryContainer,
               ],
             ),
           ),
@@ -235,14 +274,27 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
               minBlastForce: 25,
               gravity: 0.2,
               colors: [
-                cs.primary, cs.secondary, cs.tertiary,
-                cs.primaryContainer, cs.secondaryContainer,
+                cs.primary,
+                cs.secondary,
+                cs.tertiary,
+                cs.primaryContainer,
+                cs.secondaryContainer,
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  String get _statusMessage {
+    if (widget.cart.orderType == OrderType.dineIn && _tableToken != null) {
+      return 'We will bring your order to table $_tableToken · 10–15 min';
+    }
+    if (widget.cart.orderType == OrderType.dineIn) {
+      return 'Your order is being prepared for table service · 10–15 min';
+    }
+    return 'Your packed order will be ready at the pickup counter · 10–15 min';
   }
 }
 
@@ -253,6 +305,7 @@ class _ReceiptCard extends StatelessWidget {
     required this.orderNumber,
     required this.dateTime,
     required this.orderType,
+    required this.tableToken,
     required this.items,
     required this.subtotal,
     required this.discount,
@@ -266,6 +319,7 @@ class _ReceiptCard extends StatelessWidget {
   final String orderNumber;
   final String dateTime;
   final String orderType;
+  final String? tableToken;
   final List<CartItem> items;
   final double subtotal;
   final double discount;
@@ -287,148 +341,224 @@ class _ReceiptCard extends StatelessWidget {
       child: Container(
         color: cs.surfaceContainerLow,
         child: Column(
-        children: [
-
-          // ── Restaurant header ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-            child: Column(
-              children: [
-                Text(
-                  'TASTY BITES',
-                  style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.2),
-                ),
-                const SizedBox(height: 4),
-                Text('Food Court · Pine Labs Plaza, Sector 5', style: muted, textAlign: TextAlign.center),
-                Text('GSTIN: 27AABCT1332L1ZK', style: muted),
-              ],
-            ),
-          ),
-          dash,
-
-          // ── Order meta ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Order #$orderNumber',
-                          style: tt.labelLarge?.copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 2),
-                      Text(orderType, style: muted),
-                      const SizedBox(height: 2),
-                      Text(
-                        '$paymentMethod · tastybites@pinelabs',
-                        style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
-                      ),
-                    ],
+          children: [
+            // ── Restaurant header ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              child: Column(
+                children: [
+                  Text(
+                    'TASTY BITES',
+                    style: tt.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(dateTime, style: muted, textAlign: TextAlign.right),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    'Food Court · Pine Labs Plaza, Sector 5',
+                    style: muted,
+                    textAlign: TextAlign.center,
+                  ),
+                  Text('GSTIN: 27AABCT1332L1ZK', style: muted),
+                ],
+              ),
             ),
-          ),
-          dash,
+            dash,
 
-          // ── Items ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-            child: Column(
-              children: [
-                // Column header
-                Row(
-                  children: [
-                    Expanded(child: Text('ITEM', style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant, letterSpacing: 0.8))),
-                    SizedBox(width: 36, child: Text('QTY', style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant, letterSpacing: 0.8), textAlign: TextAlign.center)),
-                    SizedBox(width: 72, child: Text('AMOUNT', style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant, letterSpacing: 0.8), textAlign: TextAlign.right)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ...items.map((ci) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(ci.item.name, style: tt.bodyMedium),
-                          ),
-                          SizedBox(
-                            width: 36,
-                            child: Text('${ci.quantity}', style: tt.bodyMedium, textAlign: TextAlign.center),
-                          ),
-                          SizedBox(
-                            width: 72,
-                            child: Text('₹${ci.subtotal.round()}',
-                                style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                                textAlign: TextAlign.right),
-                          ),
-                        ],
-                      ),
-                      if (ci.size != null || ci.addOns.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 1),
-                          child: Text(
-                            [if (ci.size != null) ci.size!, ...ci.addOns].join(' · '),
-                            style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+            // ── Order meta ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order #$orderNumber',
+                          style: tt.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
+                        const SizedBox(height: 2),
+                        Text(orderType, style: muted),
+                        if (tableToken != null) ...[
+                          const SizedBox(height: 2),
+                          Text('Table $tableToken', style: muted),
+                        ],
+                        const SizedBox(height: 2),
+                        Text(
+                          '$paymentMethod · tastybites@pinelabs',
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(dateTime, style: muted, textAlign: TextAlign.right),
+                ],
+              ),
+            ),
+            dash,
+
+            // ── Items ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              child: Column(
+                children: [
+                  // Column header
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'ITEM',
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 36,
+                        child: Text(
+                          'QTY',
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                            letterSpacing: 0.8,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 72,
+                        child: Text(
+                          'AMOUNT',
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                            letterSpacing: 0.8,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
                     ],
                   ),
-                )),
-              ],
-            ),
-          ),
-          dash,
-
-          // ── Subtotals ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-            child: Column(
-              children: [
-                _ReceiptRow('Subtotal', '₹${subtotal.round()}', tt),
-                if (discount > 0) ...[
-                  const SizedBox(height: 4),
-                  _ReceiptRow('Item savings', '−₹${discount.round()}', tt, color: Colors.green.shade600),
-                ],
-                if (couponDiscount > 0) ...[
-                  const SizedBox(height: 4),
-                  _ReceiptRow(
-                    couponCode != null ? 'Coupon ($couponCode)' : 'Coupon',
-                    '−₹${couponDiscount.round()}',
-                    tt,
-                    color: Colors.green.shade600,
+                  const SizedBox(height: 8),
+                  ...items.map(
+                    (ci) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(ci.item.name, style: tt.bodyMedium),
+                              ),
+                              SizedBox(
+                                width: 36,
+                                child: Text(
+                                  '${ci.quantity}',
+                                  style: tt.bodyMedium,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 72,
+                                child: Text(
+                                  '₹${ci.subtotal.round()}',
+                                  style: tt.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (ci.hasCustomizations)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 1),
+                              child: Text(
+                                ci.customizationSummary.join(' · '),
+                                style: tt.labelSmall?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
-                const SizedBox(height: 4),
-                _ReceiptRow('GST (5%)', '₹${tax.round()}', tt),
-              ],
+              ),
             ),
-          ),
+            dash,
 
-          // Solid divider before total
-          Divider(height: 1, thickness: 1, color: cs.outlineVariant.withAlpha(160)),
-
-          // ── Total ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('TOTAL', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.6)),
-                Text('₹${total.round()}', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700, color: cs.primary)),
-              ],
+            // ── Subtotals ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              child: Column(
+                children: [
+                  _ReceiptRow('Subtotal', '₹${subtotal.round()}', tt),
+                  if (discount > 0) ...[
+                    const SizedBox(height: 4),
+                    _ReceiptRow(
+                      'Item savings',
+                      '−₹${discount.round()}',
+                      tt,
+                      color: Colors.green.shade600,
+                    ),
+                  ],
+                  if (couponDiscount > 0) ...[
+                    const SizedBox(height: 4),
+                    _ReceiptRow(
+                      couponCode != null ? 'Coupon ($couponCode)' : 'Coupon',
+                      '−₹${couponDiscount.round()}',
+                      tt,
+                      color: Colors.green.shade600,
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  _ReceiptRow('GST (5%)', '₹${tax.round()}', tt),
+                ],
+              ),
             ),
-          ),
 
-        ],
-      ),
+            // Solid divider before total
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: cs.outlineVariant.withAlpha(160),
+            ),
+
+            // ── Total ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'TOTAL',
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                  Text(
+                    '₹${total.round()}',
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: cs.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -446,7 +576,10 @@ class _ReceiptRow extends StatelessWidget {
     final style = tt.bodyMedium?.copyWith(color: color);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(label, style: style), Text(value, style: style)],
+      children: [
+        Text(label, style: style),
+        Text(value, style: style),
+      ],
     );
   }
 }

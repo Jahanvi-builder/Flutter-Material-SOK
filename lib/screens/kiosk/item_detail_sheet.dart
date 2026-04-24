@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 
 import '../../models/cart_controller.dart';
+import '../../models/cart_item.dart';
 import '../../models/menu_item.dart';
 import '../../services/haptic_service.dart';
 
 Color _starColor(double rating) {
-  if (rating >= 4.5) return const Color(0xFF2E7D32); // dark green
-  if (rating >= 4.0) return const Color(0xFFFFA726); // amber
-  if (rating >= 3.5) return const Color(0xFF66BB6A); // light green
+  if (rating >= 4.5) return const Color(0xFF2E7D32);
+  if (rating >= 4.0) return const Color(0xFFFFA726);
+  if (rating >= 3.5) return const Color(0xFF66BB6A);
   return const Color(0xFFFFA726);
 }
 
-// Shared chip style matching the menu category chips
 const _chipShape = StadiumBorder();
 const _chipPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 12);
 const _chipLabelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w500);
 const _chipSpacing = 8.0;
 
-/// Call this instead of showModalBottomSheet/showDialog directly.
-/// Automatically picks the right presentation based on screen width.
-void showItemDetail(BuildContext context, MenuItem item, CartController cart) {
+void showItemDetail(
+  BuildContext context,
+  MenuItem item,
+  CartController cart, {
+  CartItem? editingCartItem,
+}) {
   final isWide = MediaQuery.sizeOf(context).width >= 700;
 
   if (isWide) {
@@ -33,7 +36,11 @@ void showItemDetail(BuildContext context, MenuItem item, CartController cart) {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
         child: SizedBox(
           width: 560,
-          child: _ItemDetailContent(item: item, cart: cart),
+          child: _ItemDetailContent(
+            item: item,
+            cart: cart,
+            editingCartItem: editingCartItem,
+          ),
         ),
       ),
     );
@@ -57,6 +64,7 @@ void showItemDetail(BuildContext context, MenuItem item, CartController cart) {
           child: _ItemDetailContent(
             item: item,
             cart: cart,
+            editingCartItem: editingCartItem,
             scrollController: scrollController,
             showDragHandle: true,
           ),
@@ -70,12 +78,14 @@ class _ItemDetailContent extends StatefulWidget {
   const _ItemDetailContent({
     required this.item,
     required this.cart,
+    this.editingCartItem,
     this.scrollController,
     this.showDragHandle = false,
   });
 
   final MenuItem item;
   final CartController cart;
+  final CartItem? editingCartItem;
   final ScrollController? scrollController;
   final bool showDragHandle;
 
@@ -85,22 +95,44 @@ class _ItemDetailContent extends StatefulWidget {
 
 class _ItemDetailContentState extends State<_ItemDetailContent> {
   late String? _selectedSize;
-  final Set<String> _selectedAddOns = {};
-  int _quantity = 1;
+  late Set<String> _selectedAddOns;
+  late Map<String, List<String>> _selectedCustomizations;
+  late int _quantity;
 
   @override
   void initState() {
     super.initState();
-    _selectedSize = widget.item.sizes.isNotEmpty ? widget.item.sizes.first : null;
+    final editingItem = widget.editingCartItem;
+    _selectedSize =
+        editingItem?.size ??
+        (widget.item.sizes.isNotEmpty ? widget.item.sizes.first : null);
+    _selectedAddOns = {...editingItem?.addOns ?? const <String>[]};
+    _selectedCustomizations = {
+      for (final group in widget.item.customizationGroups)
+        group.id: List<String>.from(
+          editingItem?.selectedCustomizations[group.id] ??
+              (group.defaultOptionIds.isNotEmpty
+                  ? group.defaultOptionIds
+                  : group.selectionType == CustomOptionSelectionType.single &&
+                        group.options.isNotEmpty
+                  ? [group.options.first.id]
+                  : const <String>[]),
+        ),
+    };
+    _quantity = editingItem?.quantity ?? 1;
   }
 
-  double get _itemTotal => widget.item.price * _quantity;
+  double get _unitPrice =>
+      widget.item.price +
+      widget.item.customizationPrice(_selectedCustomizations);
+  double get _itemTotal => _unitPrice * _quantity;
 
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isEditing = widget.editingCartItem != null;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -117,7 +149,6 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
           ),
           const SizedBox(height: 8),
         ],
-
         Flexible(
           child: SingleChildScrollView(
             controller: widget.scrollController,
@@ -125,7 +156,6 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image — real asset when available, icon placeholder otherwise
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: AspectRatio(
@@ -136,25 +166,37 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                             fit: BoxFit.cover,
                             errorBuilder: (_, _, _) => ColoredBox(
                               color: item.color.withAlpha(60),
-                              child: Center(child: Icon(item.icon, size: 80, color: item.color)),
+                              child: Center(
+                                child: Icon(
+                                  item.icon,
+                                  size: 80,
+                                  color: item.color,
+                                ),
+                              ),
                             ),
                           )
                         : ColoredBox(
                             color: item.color.withAlpha(60),
-                            child: Center(child: Icon(item.icon, size: 80, color: item.color)),
+                            child: Center(
+                              child: Icon(
+                                item.icon,
+                                size: 80,
+                                color: item.color,
+                              ),
+                            ),
                           ),
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Name + price
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Text(
                         item.name,
-                        style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w500),
+                        style: tt.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                     Row(
@@ -168,83 +210,146 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                             style: tt.bodyMedium?.copyWith(
                               color: cs.onSurfaceVariant.withAlpha(120),
                               decoration: TextDecoration.lineThrough,
-                              decorationColor: cs.onSurfaceVariant.withAlpha(120),
+                              decorationColor: cs.onSurfaceVariant.withAlpha(
+                                120,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 10),
                         ],
                         Text.rich(
-                          TextSpan(children: [
-                            TextSpan(
-                              text: '₹',
-                              style: tt.titleMedium?.copyWith(
-                                color: cs.primary,
-                                fontWeight: FontWeight.w500,
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '₹',
+                                style: tt.titleMedium?.copyWith(
+                                  color: cs.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                            TextSpan(
-                              text: '${item.price.round()}',
-                              style: tt.headlineSmall?.copyWith(
-                                color: cs.primary,
-                                fontWeight: FontWeight.w500,
+                              TextSpan(
+                                text: '${_unitPrice.round()}',
+                                style: tt.headlineSmall?.copyWith(
+                                  color: cs.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                          ]),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-
-                // Sub-category + veg indicator + prep time
                 Row(
                   children: [
                     _VegIndicator(isVeg: item.isVeg),
                     const SizedBox(width: 8),
                     Text(
                       item.subCategory,
-                      style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant),
+                      style: tt.labelMedium?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       item.rating.toStringAsFixed(1),
-                      style: tt.labelMedium?.copyWith(fontSize: 16, fontWeight: FontWeight.w500),
+                      style: tt.labelMedium?.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(Icons.star_rounded, size: 20, color: _starColor(item.rating)),
+                    Icon(
+                      Icons.star_rounded,
+                      size: 20,
+                      color: _starColor(item.rating),
+                    ),
                     const Spacer(),
-                    Icon(Icons.schedule_rounded, size: 14, color: cs.onSurfaceVariant),
+                    Icon(
+                      Icons.schedule_rounded,
+                      size: 14,
+                      color: cs.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       item.prepTime,
-                      style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant),
+                      style: tt.labelMedium?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
-
-                // Spice level
                 if (item.spiceLevel > 0) ...[
                   const SizedBox(height: 6),
                   Row(
-                    children: List.generate(5, (i) => Padding(
-                      padding: const EdgeInsets.only(right: 2),
-                      child: Icon(
-                        Icons.local_fire_department,
-                        size: 16,
-                        color: i < item.spiceLevel ? const Color(0xFFE53935) : cs.outlineVariant,
+                    children: List.generate(
+                      5,
+                      (i) => Padding(
+                        padding: const EdgeInsets.only(right: 2),
+                        child: Icon(
+                          Icons.local_fire_department,
+                          size: 16,
+                          color: i < item.spiceLevel
+                              ? const Color(0xFFE53935)
+                              : cs.outlineVariant,
+                        ),
                       ),
-                    )),
+                    ),
                   ),
                 ],
-
                 const SizedBox(height: 8),
-                Text(item.description, style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
-
-                // Sizes
-                if (item.sizes.isNotEmpty) ...[
+                Text(
+                  item.description,
+                  style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
+                ),
+                if (item.customizationGroups.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Size', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                  Text(
+                    'Customize Your Order',
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...item.customizationGroups.map(
+                    (group) => Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: _CustomizationGroupSection(
+                        group: group,
+                        selectedIds:
+                            _selectedCustomizations[group.id] ??
+                            const <String>[],
+                        onSingleSelected: (optionId) => setState(() {
+                          _selectedCustomizations[group.id] = [optionId];
+                        }),
+                        onToggleSelected: (optionId, selected) => setState(() {
+                          final current = [
+                            ..._selectedCustomizations[group.id] ??
+                                const <String>[],
+                          ];
+                          if (selected) {
+                            if (!current.contains(optionId)) {
+                              current.add(optionId);
+                            }
+                          } else {
+                            current.remove(optionId);
+                          }
+                          _selectedCustomizations[group.id] = current;
+                        }),
+                      ),
+                    ),
+                  ),
+                ],
+                if (item.sizes.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Size',
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: _chipSpacing,
@@ -261,11 +366,14 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                     }).toList(),
                   ),
                 ],
-
-                // Add-ons
                 if (item.addOns.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Add-ons', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                  Text(
+                    'Add-ons',
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: _chipSpacing,
@@ -275,8 +383,8 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                       return FilterChip(
                         label: Text(addon, style: _chipLabelStyle),
                         selected: selected,
-                        onSelected: (v) => setState(() {
-                          if (v) {
+                        onSelected: (value) => setState(() {
+                          if (value) {
                             _selectedAddOns.add(addon);
                           } else {
                             _selectedAddOns.remove(addon);
@@ -289,13 +397,9 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                     }).toList(),
                   ),
                 ],
-
                 const SizedBox(height: 32),
-
-                // Quantity + Add to Cart
                 Row(
                   children: [
-                    // Quantity stepper
                     SizedBox(
                       height: 56,
                       child: DecoratedBox(
@@ -307,9 +411,15 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.remove),
-                              constraints: const BoxConstraints.tightFor(width: 56, height: 56),
+                              constraints: const BoxConstraints.tightFor(
+                                width: 56,
+                                height: 56,
+                              ),
                               onPressed: _quantity > 1
-                                  ? () { HapticService.tap(); setState(() => _quantity--); }
+                                  ? () {
+                                      HapticService.tap();
+                                      setState(() => _quantity--);
+                                    }
                                   : null,
                             ),
                             SizedBox(
@@ -322,41 +432,80 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.add),
-                              constraints: const BoxConstraints.tightFor(width: 56, height: 56),
-                              onPressed: () { HapticService.tap(); setState(() => _quantity++); },
+                              constraints: const BoxConstraints.tightFor(
+                                width: 56,
+                                height: 56,
+                              ),
+                              onPressed: () {
+                                HapticService.tap();
+                                setState(() => _quantity++);
+                              },
                             ),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(width: 16),
-
-                    // Add to cart button
                     Expanded(
                       child: FilledButton.tonal(
                         onPressed: () {
                           HapticService.tap();
-                          widget.cart.add(
-                            item,
-                            size: _selectedSize,
-                            addOns: _selectedAddOns.toList(),
-                            quantity: _quantity,
-                          );
-                          // Capture overlay + colors before the pop disposes context.
+                          final selectionMap = {
+                            for (final entry in _selectedCustomizations.entries)
+                              entry.key: List<String>.from(entry.value),
+                          };
+                          if (isEditing) {
+                            widget.cart.updateItem(
+                              widget.editingCartItem!,
+                              size: _selectedSize,
+                              addOns: _selectedAddOns.toList(),
+                              selectedCustomizations: selectionMap,
+                              quantity: _quantity,
+                            );
+                          } else {
+                            widget.cart.add(
+                              item,
+                              size: _selectedSize,
+                              addOns: _selectedAddOns.toList(),
+                              selectedCustomizations: selectionMap,
+                              quantity: _quantity,
+                            );
+                          }
                           final overlay = Overlay.of(context);
-                          final cs = Theme.of(context).colorScheme;
                           Navigator.pop(context);
-                          _showToast(overlay, '${item.name} added to order', cs);
+                          _showToast(
+                            overlay,
+                            isEditing
+                                ? '${item.name} updated'
+                                : '${item.name} added to order',
+                            cs,
+                          );
                         },
                         style: FilledButton.styleFrom(
                           fixedSize: const Size.fromHeight(56),
-                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'GoogleSansFlex', fontVariations: [FontVariation('ROND', 100.0)]),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'GoogleSansFlex',
+                            fontVariations: [FontVariation('ROND', 100.0)],
+                          ),
                         ),
-                        child: Text.rich(TextSpan(children: [
-                          const TextSpan(text: 'Add to Cart  ·  '),
-                          const TextSpan(text: '₹', style: TextStyle(fontSize: 13)),
-                          TextSpan(text: '${_itemTotal.round()}'),
-                        ])),
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: isEditing
+                                    ? 'Update Order  ·  '
+                                    : 'Add to Cart  ·  ',
+                              ),
+                              const TextSpan(
+                                text: '₹',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              TextSpan(text: '${_itemTotal.round()}'),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -370,7 +519,66 @@ class _ItemDetailContentState extends State<_ItemDetailContent> {
   }
 }
 
-/// Content-hugging centered toast — bypasses SnackBar's full-width behaviour.
+class _CustomizationGroupSection extends StatelessWidget {
+  const _CustomizationGroupSection({
+    required this.group,
+    required this.selectedIds,
+    required this.onSingleSelected,
+    required this.onToggleSelected,
+  });
+
+  final MenuItemCustomizationGroup group;
+  final List<String> selectedIds;
+  final ValueChanged<String> onSingleSelected;
+  final void Function(String optionId, bool selected) onToggleSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          group.title,
+          style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: _chipSpacing,
+          runSpacing: _chipSpacing,
+          children: group.options.map((option) {
+            final selected = selectedIds.contains(option.id);
+            final label = option.priceDelta > 0
+                ? '${option.label} (+₹${option.priceDelta.round()})'
+                : option.label;
+
+            if (group.selectionType == CustomOptionSelectionType.single) {
+              return ChoiceChip(
+                label: Text(label, style: _chipLabelStyle),
+                selected: selected,
+                onSelected: (_) => onSingleSelected(option.id),
+                shape: _chipShape,
+                padding: _chipPadding,
+                showCheckmark: false,
+              );
+            }
+
+            return FilterChip(
+              label: Text(label, style: _chipLabelStyle),
+              selected: selected,
+              onSelected: (value) => onToggleSelected(option.id, value),
+              shape: _chipShape,
+              padding: _chipPadding,
+              showCheckmark: false,
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
 void _showToast(OverlayState overlay, String message, ColorScheme cs) {
   late OverlayEntry entry;
   entry = OverlayEntry(
@@ -378,19 +586,35 @@ void _showToast(OverlayState overlay, String message, ColorScheme cs) {
       bottom: 80,
       left: 0,
       right: 0,
-      child: Center(
-        child: Material(
-          color: cs.inverseSurface,
-          borderRadius: BorderRadius.circular(12),
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            child: Text(
-              message,
-              style: TextStyle(
-                color: cs.onInverseSurface,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+      child: IgnorePointer(
+        child: Center(
+          child: Material(
+            color: Colors.transparent,
+            child: DecoratedBox(
+              decoration: ShapeDecoration(
+                color: cs.inverseSurface,
+                shape: const StadiumBorder(),
+                shadows: const [
+                  BoxShadow(
+                    blurRadius: 18,
+                    offset: Offset(0, 8),
+                    color: Color(0x33000000),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                child: Text(
+                  message,
+                  style: TextStyle(
+                    color: cs.onInverseSurface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ),
           ),
@@ -398,37 +622,31 @@ void _showToast(OverlayState overlay, String message, ColorScheme cs) {
       ),
     ),
   );
+
   overlay.insert(entry);
-  Future.delayed(const Duration(seconds: 2), () {
+  Future<void>.delayed(const Duration(seconds: 2), () {
     if (entry.mounted) entry.remove();
   });
 }
 
-// Standard Indian veg / non-veg dot indicator
 class _VegIndicator extends StatelessWidget {
   const _VegIndicator({required this.isVeg});
-  final bool isVeg;
 
-  static const _vegColor   = Color(0xFF2E7D32);
-  static const _nonVegColor = Color(0xFFB71C1C);
+  final bool isVeg;
 
   @override
   Widget build(BuildContext context) {
-    final color = isVeg ? _vegColor : _nonVegColor;
+    final color = isVeg ? const Color(0xFF2E7D32) : const Color(0xFFC62828);
     return Container(
       width: 18,
       height: 18,
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: color, width: 1.5),
-        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: color, width: 1.4),
+        borderRadius: BorderRadius.circular(4),
       ),
-      child: Center(
-        child: Container(
-          width: 9,
-          height: 9,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       ),
     );
   }

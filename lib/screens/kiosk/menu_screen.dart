@@ -7,6 +7,7 @@ import '../../models/menu_item.dart';
 import '../../services/haptic_service.dart';
 import 'cart_screen.dart';
 import 'item_detail_sheet.dart';
+import 'menu_filters.dart';
 import 'phone_screen.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -18,13 +19,13 @@ class MenuScreen extends StatefulWidget {
   State<MenuScreen> createState() => _MenuScreenState();
 }
 
-
 class _MenuScreenState extends State<MenuScreen> {
   int _selectedIndex = 0;
   bool _useSideNav = true;
   bool _railExtended = true;
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  MenuFilterState _filters = MenuFilterState.empty;
   String? _phoneNumber;
 
   String get _selectedCategory => menuCategories[_selectedIndex];
@@ -39,19 +40,25 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   List<MenuItem> get _filtered {
-    final byCategory = _selectedCategory == 'All'
-        ? menuItems
-        : menuItems.where((i) => i.category == _selectedCategory).toList();
-    if (_searchQuery.isEmpty) return byCategory;
-    final q = _searchQuery.toLowerCase();
-    return byCategory
-        .where((i) => i.name.toLowerCase().contains(q) || i.description.toLowerCase().contains(q))
-        .toList();
+    return filterMenuItems(
+      menuItems,
+      category: _selectedCategory,
+      searchQuery: _searchQuery,
+      filters: _filters,
+    );
   }
 
   void _openDetail(MenuItem item) {
     HapticService.tap();
     showItemDetail(context, item, widget.cart);
+  }
+
+  void _updateFilters(MenuFilterState filters) {
+    setState(() => _filters = filters);
+  }
+
+  void _clearFilters() {
+    setState(() => _filters = MenuFilterState.empty);
   }
 
   @override
@@ -103,16 +110,22 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: Icon(_useSideNav ? Icons.view_day_outlined : Icons.view_sidebar_outlined),
+            icon: Icon(
+              _useSideNav
+                  ? Icons.view_day_outlined
+                  : Icons.view_sidebar_outlined,
+            ),
             tooltip: _useSideNav ? 'Top navigation' : 'Side navigation',
             onPressed: () => setState(() => _useSideNav = !_useSideNav),
           ),
           ValueListenableBuilder<ThemeMode>(
             valueListenable: themeNotifier,
             builder: (context, mode, _) => IconButton(
-              icon: Icon(mode == ThemeMode.dark
-                  ? Icons.light_mode_rounded
-                  : Icons.dark_mode_rounded),
+              icon: Icon(
+                mode == ThemeMode.dark
+                    ? Icons.light_mode_rounded
+                    : Icons.dark_mode_rounded,
+              ),
               tooltip: mode == ThemeMode.dark ? 'Light mode' : 'Dark mode',
               onPressed: () {
                 themeNotifier.value = mode == ThemeMode.light
@@ -128,7 +141,9 @@ class _MenuScreenState extends State<MenuScreen> {
                 message: '+91 $_phoneNumber',
                 child: CircleAvatar(
                   radius: 20,
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
                   child: Icon(
                     Icons.person_rounded,
                     size: 22,
@@ -169,11 +184,18 @@ class _MenuScreenState extends State<MenuScreen> {
                   final item = ci.item;
                   return buildCircle(
                     item.imagePath.isNotEmpty
-                        ? Image.asset(item.imagePath, fit: BoxFit.cover,
+                        ? Image.asset(
+                            item.imagePath,
+                            fit: BoxFit.cover,
                             errorBuilder: (_, _, _) => ColoredBox(
                               color: item.color.withAlpha(50),
-                              child: Icon(item.icon, size: 12, color: item.color),
-                            ))
+                              child: Icon(
+                                item.icon,
+                                size: 12,
+                                color: item.color,
+                              ),
+                            ),
+                          )
                         : ColoredBox(
                             color: item.color.withAlpha(50),
                             child: Icon(item.icon, size: 12, color: item.color),
@@ -181,21 +203,36 @@ class _MenuScreenState extends State<MenuScreen> {
                   );
                 }),
                 if (extraCount > 0)
-                  buildCircle(ColoredBox(
-                    color: Colors.white,
-                    child: Center(
-                      child: Text('+$extraCount',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87)),
+                  buildCircle(
+                    ColoredBox(
+                      color: Colors.white,
+                      child: Center(
+                        child: Text(
+                          '+$extraCount',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
                     ),
-                  )),
+                  ),
               ];
 
               final imagesWidget = SizedBox(
                 width: imgSize + (totalSlots - 1) * step,
                 height: imgSize,
                 child: Stack(
-                  children: slots.asMap().entries
-                      .map((e) => Positioned(left: e.key * step.toDouble(), child: e.value))
+                  children: slots
+                      .asMap()
+                      .entries
+                      .map(
+                        (e) => Positioned(
+                          left: e.key * step.toDouble(),
+                          child: e.value,
+                        ),
+                      )
                       .toList(),
                 ),
               );
@@ -211,15 +248,24 @@ class _MenuScreenState extends State<MenuScreen> {
                     extendedPadding: const EdgeInsets.fromLTRB(8, 16, 20, 16),
                     onPressed: () {
                       HapticService.tap();
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => CartScreen(cart: widget.cart)));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CartScreen(cart: widget.cart),
+                        ),
+                      );
                     },
                     label: Row(
                       children: [
                         imagesWidget,
                         const SizedBox(width: 12),
-                        const Text('View Cart',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        const Text(
+                          'View Cart',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         const SizedBox(width: 4),
                         const Icon(Icons.chevron_right_rounded, size: 22),
                       ],
@@ -233,36 +279,40 @@ class _MenuScreenState extends State<MenuScreen> {
           final menuGrid = Expanded(
             child: ColoredBox(
               color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final width = constraints.maxWidth;
-                  final columns = switch (width) {
-                    < 600 => 1,
-                    < 900 => 2,
-                    _ => 3,
-                  };
-                  // Card width → 4:3 image height + fixed text/button area (~160px)
-                  const hSpacing = 12.0;
-                  const hPadding = 32.0; // 16 left + 16 right
-                  final cardWidth = (width - hPadding - (columns - 1) * hSpacing) / columns;
-                  final cardHeight = cardWidth * 3 / 4 + 190;
-                  return GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: columns,
-                      crossAxisSpacing: hSpacing,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: cardWidth / cardHeight,
+              child: _filtered.isEmpty
+                  ? MenuEmptyState(onClearFilters: _clearFilters)
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final width = constraints.maxWidth;
+                        final columns = switch (width) {
+                          < 600 => 1,
+                          < 900 => 2,
+                          _ => 3,
+                        };
+                        const hSpacing = 12.0;
+                        const hPadding = 32.0;
+                        final cardWidth =
+                            (width - hPadding - (columns - 1) * hSpacing) /
+                            columns;
+                        final cardHeight = cardWidth * 3 / 4 + 190;
+                        return GridView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: columns,
+                                crossAxisSpacing: hSpacing,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: cardWidth / cardHeight,
+                              ),
+                          itemCount: _filtered.length,
+                          itemBuilder: (context, i) => _MenuItemCard(
+                            item: _filtered[i],
+                            cart: widget.cart,
+                            onTap: () => _openDetail(_filtered[i]),
+                          ),
+                        );
+                      },
                     ),
-                    itemCount: _filtered.length,
-                    itemBuilder: (context, i) => _MenuItemCard(
-                      item: _filtered[i],
-                      cart: widget.cart,
-                      onTap: () => _openDetail(_filtered[i]),
-                    ),
-                  );
-                },
-              ),
             ),
           );
 
@@ -274,10 +324,17 @@ class _MenuScreenState extends State<MenuScreen> {
               if (cat == 'All') {
                 return ClipOval(
                   child: SizedBox(
-                    width: 40, height: 40,
+                    width: 40,
+                    height: 40,
                     child: ColoredBox(
                       color: cs.surfaceContainer,
-                      child: Center(child: Icon(Icons.apps_rounded, size: 20, color: cs.onSurface)),
+                      child: Center(
+                        child: Icon(
+                          Icons.apps_rounded,
+                          size: 20,
+                          color: cs.onSurface,
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -288,19 +345,32 @@ class _MenuScreenState extends State<MenuScreen> {
               );
               return ClipOval(
                 child: SizedBox(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   child: leader.imagePath.isNotEmpty
                       ? Image.asset(
                           leader.imagePath,
                           fit: BoxFit.cover,
                           errorBuilder: (_, _, _) => ColoredBox(
                             color: leader.color.withAlpha(50),
-                            child: Center(child: Icon(leader.icon, size: 18, color: leader.color)),
+                            child: Center(
+                              child: Icon(
+                                leader.icon,
+                                size: 18,
+                                color: leader.color,
+                              ),
+                            ),
                           ),
                         )
                       : ColoredBox(
                           color: leader.color.withAlpha(50),
-                          child: Center(child: Icon(leader.icon, size: 18, color: leader.color)),
+                          child: Center(
+                            child: Icon(
+                              leader.icon,
+                              size: 18,
+                              color: leader.color,
+                            ),
+                          ),
                         ),
                 ),
               );
@@ -321,14 +391,22 @@ class _MenuScreenState extends State<MenuScreen> {
                       alignment: Alignment.centerLeft,
                       child: IconButton(
                         tooltip: _railExtended ? 'Collapse' : 'Expand',
-                        icon: Icon(_railExtended ? Icons.menu_open_rounded : Icons.menu_rounded),
-                        onPressed: () => setState(() => _railExtended = !_railExtended),
+                        icon: Icon(
+                          _railExtended
+                              ? Icons.menu_open_rounded
+                              : Icons.menu_rounded,
+                        ),
+                        onPressed: () =>
+                            setState(() => _railExtended = !_railExtended),
                       ),
                     ),
                   ),
                   Expanded(
                     child: ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       children: menuCategories.asMap().entries.map((e) {
                         final i = e.key;
                         final cat = e.value;
@@ -337,11 +415,16 @@ class _MenuScreenState extends State<MenuScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(32),
-                            onTap: () { HapticService.tap(); setState(() => _selectedIndex = i); },
+                            onTap: () {
+                              HapticService.tap();
+                              setState(() => _selectedIndex = i);
+                            },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 150),
                               decoration: BoxDecoration(
-                                color: selected ? cs.surfaceContainerHigh : Colors.transparent,
+                                color: selected
+                                    ? cs.surfaceContainerHigh
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(32),
                               ),
                               padding: const EdgeInsets.all(8),
@@ -353,15 +436,23 @@ class _MenuScreenState extends State<MenuScreen> {
                                   Expanded(
                                     child: AnimatedOpacity(
                                       opacity: _railExtended ? 1.0 : 0.0,
-                                      duration: const Duration(milliseconds: 150),
+                                      duration: const Duration(
+                                        milliseconds: 150,
+                                      ),
                                       child: Padding(
-                                        padding: const EdgeInsets.only(left: 12),
+                                        padding: const EdgeInsets.only(
+                                          left: 12,
+                                        ),
                                         child: Text(
                                           cat,
                                           style: tt.bodyLarge?.copyWith(
                                             fontSize: 15,
-                                            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                                            color: selected ? cs.onSurface : cs.onSurfaceVariant,
+                                            fontWeight: selected
+                                                ? FontWeight.w600
+                                                : FontWeight.w400,
+                                            color: selected
+                                                ? cs.onSurface
+                                                : cs.onSurfaceVariant,
                                           ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -393,8 +484,24 @@ class _MenuScreenState extends State<MenuScreen> {
                     ),
                     child: Stack(
                       children: [
-                        Positioned.fill(child: Column(children: [menuGrid])),
-                        Positioned(bottom: 0, left: 0, right: 0, child: Center(child: cartFab)),
+                        Positioned.fill(
+                          child: Column(
+                            children: [
+                              MenuFilterBar(
+                                filters: _filters,
+                                onFiltersChanged: _updateFilters,
+                                onClearAll: _clearFilters,
+                              ),
+                              menuGrid,
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Center(child: cartFab),
+                        ),
                       ],
                     ),
                   ),
@@ -410,7 +517,10 @@ class _MenuScreenState extends State<MenuScreen> {
               SizedBox(
                 height: 80,
                 child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   scrollDirection: Axis.horizontal,
                   itemCount: menuCategories.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 8),
@@ -428,16 +538,29 @@ class _MenuScreenState extends State<MenuScreen> {
                               width: 32,
                               height: 32,
                               child: ColoredBox(
-                                color: Theme.of(context).colorScheme.primaryContainer,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primaryContainer,
                                 child: Center(
-                                  child: Icon(Icons.apps_rounded, size: 16,
-                                      color: Theme.of(context).colorScheme.onPrimaryContainer),
+                                  child: Icon(
+                                    Icons.apps_rounded,
+                                    size: 16,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimaryContainer,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Text('All', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                          const Text(
+                            'All',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ],
                       );
                     } else {
@@ -458,17 +581,35 @@ class _MenuScreenState extends State<MenuScreen> {
                                       fit: BoxFit.cover,
                                       errorBuilder: (_, _, _) => ColoredBox(
                                         color: leader.color.withAlpha(50),
-                                        child: Center(child: Icon(leader.icon, size: 14, color: leader.color)),
+                                        child: Center(
+                                          child: Icon(
+                                            leader.icon,
+                                            size: 14,
+                                            color: leader.color,
+                                          ),
+                                        ),
                                       ),
                                     )
                                   : ColoredBox(
                                       color: leader.color.withAlpha(50),
-                                      child: Center(child: Icon(leader.icon, size: 14, color: leader.color)),
+                                      child: Center(
+                                        child: Icon(
+                                          leader.icon,
+                                          size: 14,
+                                          color: leader.color,
+                                        ),
+                                      ),
                                     ),
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text(cat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                          Text(
+                            cat,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ],
                       );
                     }
@@ -476,7 +617,9 @@ class _MenuScreenState extends State<MenuScreen> {
                     return FilterChip(
                       label: chipLabel,
                       selected: selected,
-                      onSelected: (_) => setState(() => _selectedIndex = menuCategories.indexOf(cat)),
+                      onSelected: (_) => setState(
+                        () => _selectedIndex = menuCategories.indexOf(cat),
+                      ),
                       showCheckmark: false,
                       shape: const StadiumBorder(),
                       padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
@@ -484,12 +627,22 @@ class _MenuScreenState extends State<MenuScreen> {
                   },
                 ),
               ),
+              MenuFilterBar(
+                filters: _filters,
+                onFiltersChanged: _updateFilters,
+                onClearAll: _clearFilters,
+              ),
 
               Expanded(
                 child: Stack(
                   children: [
                     Column(children: [menuGrid]),
-                    Positioned(bottom: 0, left: 0, right: 0, child: Center(child: cartFab)),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Center(child: cartFab),
+                    ),
                   ],
                 ),
               ),
@@ -509,13 +662,17 @@ Color _starColor(double rating) {
 }
 
 class _MenuItemCard extends StatelessWidget {
-  const _MenuItemCard({required this.item, required this.cart, required this.onTap});
+  const _MenuItemCard({
+    required this.item,
+    required this.cart,
+    required this.onTap,
+  });
 
   final MenuItem item;
   final CartController cart;
   final VoidCallback onTap;
 
-  bool get _isCustomizable => item.sizes.isNotEmpty || item.addOns.isNotEmpty;
+  bool get _isCustomizable => item.isCustomizable;
 
   @override
   Widget build(BuildContext context) {
@@ -541,12 +698,20 @@ class _MenuItemCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           errorBuilder: (_, _, _) => ColoredBox(
                             color: item.color.withAlpha(50),
-                            child: Center(child: Icon(item.icon, size: 64, color: item.color)),
+                            child: Center(
+                              child: Icon(
+                                item.icon,
+                                size: 64,
+                                color: item.color,
+                              ),
+                            ),
                           ),
                         )
                       : ColoredBox(
                           color: item.color.withAlpha(50),
-                          child: Center(child: Icon(item.icon, size: 64, color: item.color)),
+                          child: Center(
+                            child: Icon(item.icon, size: 64, color: item.color),
+                          ),
                         ),
                   Positioned(
                     bottom: 10,
@@ -557,7 +722,10 @@ class _MenuItemCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -570,7 +738,11 @@ class _MenuItemCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 3),
-                            Icon(Icons.star_rounded, size: 14, color: _starColor(item.rating)),
+                            Icon(
+                              Icons.star_rounded,
+                              size: 14,
+                              color: _starColor(item.rating),
+                            ),
                           ],
                         ),
                       ),
@@ -585,26 +757,32 @@ class _MenuItemCard extends StatelessWidget {
             Expanded(
               child: ClipRect(
                 child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.name,
-                      style: tt.titleSmall?.copyWith(fontSize: 20, fontWeight: FontWeight.w500),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.description,
-                      style: tt.bodySmall?.copyWith(fontSize: 14, color: cs.onSurfaceVariant.withAlpha(140)),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                  padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: tt.titleSmall?.copyWith(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.description,
+                        style: tt.bodySmall?.copyWith(
+                          fontSize: 14,
+                          color: cs.onSurfaceVariant.withAlpha(140),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               ),
             ),
 
@@ -616,125 +794,166 @@ class _MenuItemCard extends StatelessWidget {
                   final buttonWidth = constraints.maxWidth * 0.5;
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text.rich(
-                            TextSpan(children: [
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text.rich(
                               TextSpan(
-                                text: '₹',
-                                style: tt.titleSmall?.copyWith(
-                                  fontSize: 13,
-                                  color: cs.primary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              TextSpan(
-                                text: '${item.price.round()}',
-                                style: tt.titleSmall?.copyWith(
-                                  fontSize: 22,
-                                  color: cs.primary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ]),
-                          ),
-                          if (item.originalPrice != null) ...[
-                            const SizedBox(width: 8),
-                            Text(
-                              '₹${item.originalPrice!.round()}',
-                              style: tt.bodySmall?.copyWith(
-                                fontSize: 13,
-                                color: cs.onSurfaceVariant.withAlpha(120),
-                                decoration: TextDecoration.lineThrough,
-                                decorationColor: cs.onSurfaceVariant.withAlpha(120),
+                                children: [
+                                  TextSpan(
+                                    text: '₹',
+                                    style: tt.titleSmall?.copyWith(
+                                      fontSize: 13,
+                                      color: cs.primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: '${item.price.round()}',
+                                    style: tt.titleSmall?.copyWith(
+                                      fontSize: 22,
+                                      color: cs.primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ],
-                      ),
-                      if (_isCustomizable)
-                        FilledButton.tonal(
-                          onPressed: onTap,
-                          style: FilledButton.styleFrom(
-                            fixedSize: Size(buttonWidth, 56),
-                            iconSize: 22,
-                            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'GoogleSansFlex', fontVariations: [FontVariation('ROND', 100.0)]),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add),
-                              SizedBox(width: 6),
-                              Text('Add'),
-                            ],
-                          ),
-                        )
-                      else
-                        ListenableBuilder(
-                          listenable: cart,
-                          builder: (context, _) {
-                            final matches = cart.items.where((ci) => ci.item.id == item.id);
-                            final cartItem = matches.isEmpty ? null : matches.first;
-                            final count = cartItem?.quantity ?? 0;
-
-                            if (count == 0) {
-                              return FilledButton.tonal(
-                                onPressed: () {
-                                  HapticService.tap();
-                                  cart.add(item);
-                                },
-                                style: FilledButton.styleFrom(
-                                  fixedSize: Size(buttonWidth, 56),
-                                  iconSize: 22,
-                                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'GoogleSansFlex', fontVariations: [FontVariation('ROND', 100.0)]),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.add),
-                                    SizedBox(width: 6),
-                                    Text('Add'),
-                                  ],
-                                ),
-                              );
-                            }
-
-                            return SizedBox(
-                              width: buttonWidth,
-                              height: 56,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: cs.outlineVariant),
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.remove),
-                                      constraints: const BoxConstraints.tightFor(width: 56, height: 56),
-                                      onPressed: () { HapticService.tap(); cart.decrement(cartItem!); },
-                                    ),
-                                    Text('$count', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
-                                    IconButton(
-                                      icon: const Icon(Icons.add),
-                                      constraints: const BoxConstraints.tightFor(width: 56, height: 56),
-                                      onPressed: () { HapticService.tap(); cart.increment(cartItem!); },
-                                    ),
-                                  ],
+                            if (item.originalPrice != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                '₹${item.originalPrice!.round()}',
+                                style: tt.bodySmall?.copyWith(
+                                  fontSize: 13,
+                                  color: cs.onSurfaceVariant.withAlpha(120),
+                                  decoration: TextDecoration.lineThrough,
+                                  decorationColor: cs.onSurfaceVariant
+                                      .withAlpha(120),
                                 ),
                               ),
-                            );
-                          },
+                            ],
+                          ],
                         ),
-                    ],
-                  ),
+                        if (_isCustomizable)
+                          FilledButton.tonal(
+                            onPressed: onTap,
+                            style: FilledButton.styleFrom(
+                              fixedSize: Size(buttonWidth, 56),
+                              iconSize: 22,
+                              textStyle: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'GoogleSansFlex',
+                                fontVariations: [FontVariation('ROND', 100.0)],
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.add),
+                                SizedBox(width: 6),
+                                Text('Add'),
+                              ],
+                            ),
+                          )
+                        else
+                          ListenableBuilder(
+                            listenable: cart,
+                            builder: (context, _) {
+                              final matches = cart.items.where(
+                                (ci) => ci.item.id == item.id,
+                              );
+                              final cartItem = matches.isEmpty
+                                  ? null
+                                  : matches.first;
+                              final count = cartItem?.quantity ?? 0;
+
+                              if (count == 0) {
+                                return FilledButton.tonal(
+                                  onPressed: () {
+                                    HapticService.tap();
+                                    cart.add(item);
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    fixedSize: Size(buttonWidth, 56),
+                                    iconSize: 22,
+                                    textStyle: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: 'GoogleSansFlex',
+                                      fontVariations: [
+                                        FontVariation('ROND', 100.0),
+                                      ],
+                                    ),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.add),
+                                      SizedBox(width: 6),
+                                      Text('Add'),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              return SizedBox(
+                                width: buttonWidth,
+                                height: 56,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: cs.outlineVariant,
+                                    ),
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.remove),
+                                        constraints:
+                                            const BoxConstraints.tightFor(
+                                              width: 56,
+                                              height: 56,
+                                            ),
+                                        onPressed: () {
+                                          HapticService.tap();
+                                          cart.decrement(cartItem!);
+                                        },
+                                      ),
+                                      Text(
+                                        '$count',
+                                        style: tt.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.add),
+                                        constraints:
+                                            const BoxConstraints.tightFor(
+                                              width: 56,
+                                              height: 56,
+                                            ),
+                                        onPressed: () {
+                                          HapticService.tap();
+                                          cart.increment(cartItem!);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                      ],
+                    ),
                   );
                 },
               ),
