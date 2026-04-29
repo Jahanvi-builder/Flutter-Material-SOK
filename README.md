@@ -11,7 +11,6 @@ Tasty Bites is a food ordering kiosk experience that demonstrates Material 3 des
 | Screen | Description |
 |---|---|
 | **Welcome** | Order type selection — Dine In or Take Away |
-| **Phone** | Customer phone number capture for loyalty/receipts |
 | **Menu** | Browsable food menu with category chips, search, and a responsive grid (1–3 columns) |
 | **Item Detail** | Bottom sheet with item details and quantity picker |
 | **Cart** | Order summary with line items and running total |
@@ -48,7 +47,7 @@ lib/
     m3_showcase_screen.dart     # Material 3 component showcase
     kiosk/
       welcome_screen.dart       # Order type selection
-      phone_screen.dart         # Phone number entry
+      phone_screen.dart         # Phone + OTP dialog (currently unused)
       menu_screen.dart          # Menu grid with categories & search
       item_detail_sheet.dart    # Item bottom sheet + quantity picker
       cart_screen.dart          # Cart summary

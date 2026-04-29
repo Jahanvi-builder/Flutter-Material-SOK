@@ -1,8 +1,8 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 
+import 'screens/kiosk/merchant_login_screen.dart';
 import 'screens/kiosk/menu_screen_left.dart';
-import 'screens/kiosk/welcome_screen.dart';
 import 'screens/m3_showcase_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -29,8 +29,9 @@ class SokApp extends StatelessWidget {
               theme: AppTheme.light(),
               darkTheme: AppTheme.dark(),
               themeMode: themeMode,
-              home: const WelcomeScreen(),
+              home: const MerchantLoginScreen(),
               routes: {
+                '/merchant-login': (_) => const MerchantLoginScreen(),
                 '/m3':   (_) => const M3ShowcaseScreen(),
                 '/left': (_) => const LeftNavMenuRoute(),
               },

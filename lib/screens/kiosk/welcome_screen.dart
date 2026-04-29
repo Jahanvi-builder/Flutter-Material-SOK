@@ -50,7 +50,7 @@ class _OrderTypeButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         decoration: BoxDecoration(
-          color: cs.surfaceContainerHigh,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -188,6 +188,26 @@ class WelcomeScreen extends StatelessWidget {
                               'images/Logo/Group 1.svg',
                               height: 56,
                               fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 12,
+                          right: 12,
+                          child: Tooltip(
+                            message: 'Logout',
+                            child: IconButton.filledTonal(
+                              onPressed: () {
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/merchant-login',
+                                );
+                              },
+                              icon: const Icon(Icons.logout_rounded, size: 18),
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.white24,
+                                foregroundColor: Colors.white,
+                              ),
                             ),
                           ),
                         ),

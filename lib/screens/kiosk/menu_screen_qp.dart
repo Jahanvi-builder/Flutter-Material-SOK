@@ -9,7 +9,6 @@ import 'cart_screen.dart';
 import 'item_detail_sheet.dart';
 import 'menu_filters.dart';
 import 'qr_payment_screen.dart';
-import 'phone_screen.dart';
 
 class MenuScreenQP extends StatefulWidget {
   const MenuScreenQP({super.key, required this.cart});
@@ -27,18 +26,8 @@ class _MenuScreenQPState extends State<MenuScreenQP> {
   String _searchQuery = '';
   final _searchController = TextEditingController();
   MenuFilterState _filters = MenuFilterState.empty;
-  String? _phoneNumber;
 
   String get _selectedCategory => menuCategories[_selectedIndex];
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final phone = await showPhoneOtpDialog(context);
-      if (mounted) setState(() => _phoneNumber = phone);
-    });
-  }
 
   List<MenuItem> get _filtered {
     return filterMenuItems(
@@ -135,24 +124,6 @@ class _MenuScreenQPState extends State<MenuScreenQP> {
               },
             ),
           ),
-          if (_phoneNumber != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Tooltip(
-                message: '+91 $_phoneNumber',
-                child: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer,
-                  child: Icon(
-                    Icons.person_rounded,
-                    size: 22,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
       body: Builder(
