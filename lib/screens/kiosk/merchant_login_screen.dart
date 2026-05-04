@@ -66,18 +66,6 @@ class _MerchantLoginScreenState extends State<MerchantLoginScreen> {
           SafeArea(
             child: Stack(
               children: [
-                Positioned(
-                  top: 28,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: SvgPicture.asset(
-                      'images/Logo/Group 1.svg',
-                      height: 56,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
                 Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 520),
