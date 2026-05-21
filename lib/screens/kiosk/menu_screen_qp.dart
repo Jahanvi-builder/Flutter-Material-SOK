@@ -6,6 +6,7 @@ import '../../models/cart_controller.dart';
 import '../../models/menu_item.dart';
 import '../../services/haptic_service.dart';
 import 'cart_screen.dart';
+import 'combo_customization_screen.dart';
 import 'item_detail_sheet.dart';
 import 'menu_filters.dart';
 import 'qr_payment_screen.dart';
@@ -40,6 +41,10 @@ class _MenuScreenQPState extends State<MenuScreenQP> {
 
   void _openDetail(MenuItem item) {
     HapticService.tap();
+    if (item.isComboTemplate) {
+      openComboCustomizationScreen(context, comboItem: item, cart: widget.cart);
+      return;
+    }
     showItemDetail(context, item, widget.cart);
   }
 

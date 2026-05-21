@@ -6,6 +6,7 @@ class CartItem {
   final String? size;
   final List<String> addOns;
   final Map<String, List<String>> selectedCustomizations;
+  final CartComboDetails? comboDetails;
 
   CartItem({
     required this.item,
@@ -13,10 +14,12 @@ class CartItem {
     this.size,
     this.addOns = const [],
     this.selectedCustomizations = const {},
+    this.comboDetails,
   });
 
   double get unitPrice =>
-      item.price + item.customizationPrice(selectedCustomizations);
+      comboDetails?.comboTotal ??
+      (item.price + item.customizationPrice(selectedCustomizations));
   double get subtotal => unitPrice * quantity;
 
   List<String> get customizationSummary => [
@@ -33,6 +36,8 @@ class CartItem {
     String? size,
     List<String>? addOns,
     Map<String, List<String>>? selectedCustomizations,
+    CartComboDetails? comboDetails,
+    bool clearComboDetails = false,
   }) {
     return CartItem(
       item: item ?? this.item,
@@ -41,6 +46,7 @@ class CartItem {
       addOns: addOns ?? this.addOns,
       selectedCustomizations:
           selectedCustomizations ?? this.selectedCustomizations,
+      comboDetails: clearComboDetails ? null : (comboDetails ?? this.comboDetails),
     );
   }
 }

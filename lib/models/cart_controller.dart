@@ -52,6 +52,7 @@ class CartController extends ChangeNotifier {
     String? size,
     List<String> addOns = const [],
     Map<String, List<String>> selectedCustomizations = const {},
+    CartComboDetails? comboDetails,
     int quantity = 1,
   }) {
     final idx = _items.indexWhere(
@@ -61,6 +62,7 @@ class CartController extends ChangeNotifier {
         size: size,
         addOns: addOns,
         selectedCustomizations: selectedCustomizations,
+        comboDetails: comboDetails,
       ),
     );
 
@@ -74,6 +76,7 @@ class CartController extends ChangeNotifier {
           size: size,
           addOns: List.unmodifiable(addOns),
           selectedCustomizations: _normalizeSelections(selectedCustomizations),
+          comboDetails: comboDetails,
         ),
       );
     }
@@ -85,6 +88,7 @@ class CartController extends ChangeNotifier {
     String? size,
     List<String> addOns = const [],
     Map<String, List<String>> selectedCustomizations = const {},
+    CartComboDetails? comboDetails,
     int? quantity,
   }) {
     final existingIndex = _items.indexOf(cartItem);
@@ -95,6 +99,8 @@ class CartController extends ChangeNotifier {
       size: size,
       addOns: List.unmodifiable(addOns),
       selectedCustomizations: _normalizeSelections(selectedCustomizations),
+      comboDetails: comboDetails,
+      clearComboDetails: comboDetails == null,
     );
 
     final duplicateIndex = _items.indexWhere(
@@ -138,6 +144,7 @@ class CartController extends ChangeNotifier {
     String? size,
     List<String> addOns = const [],
     Map<String, List<String>> selectedCustomizations = const {},
+    CartComboDetails? comboDetails,
   }) {
     return cartItem.item.id == item.id &&
         cartItem.size == size &&
@@ -145,14 +152,16 @@ class CartController extends ChangeNotifier {
         _sameSelections(
           cartItem.selectedCustomizations,
           selectedCustomizations,
-        );
+        ) &&
+        _sameComboDetails(cartItem.comboDetails, comboDetails);
   }
 
   bool _sameConfiguration(CartItem a, CartItem b) {
     return a.item.id == b.item.id &&
         a.size == b.size &&
         _sameStringList(a.addOns, b.addOns) &&
-        _sameSelections(a.selectedCustomizations, b.selectedCustomizations);
+        _sameSelections(a.selectedCustomizations, b.selectedCustomizations) &&
+        _sameComboDetails(a.comboDetails, b.comboDetails);
   }
 
   bool _sameSelections(
@@ -177,6 +186,15 @@ class CartController extends ChangeNotifier {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+
+  bool _sameComboDetails(CartComboDetails? a, CartComboDetails? b) {
+    if (a == null || b == null) return a == b;
+    return a.templateId == b.templateId &&
+        a.comboTotal == b.comboTotal &&
+        a.aLaCarteTotal == b.aLaCarteTotal &&
+        a.savingsAmount == b.savingsAmount &&
+        _sameSelections(a.selections, b.selections);
   }
 
   Map<String, List<String>> _normalizeSelections(

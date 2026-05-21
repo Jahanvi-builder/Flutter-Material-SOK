@@ -6,6 +6,7 @@ import '../../data/coupons.dart';
 import '../../models/cart_controller.dart';
 import '../../models/cart_item.dart';
 import '../../services/haptic_service.dart';
+import 'combo_customization_screen.dart';
 import 'item_detail_sheet.dart';
 import 'post_payment_flow.dart';
 import 'qr_payment_screen.dart';
@@ -248,6 +249,7 @@ class _CartItemTile extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final item = cartItem.item;
+    final comboDetails = cartItem.comboDetails;
 
     return Card.filled(
       child: Padding(
@@ -291,10 +293,24 @@ class _CartItemTile extends StatelessWidget {
                       cartItem.customizationSummary.join(' · '),
                       style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                     ),
+                  if (comboDetails != null && comboDetails.savingsAmount > 0)
+                    Text(
+                      'You save ₹${(comboDetails.savingsAmount * cartItem.quantity).round()}',
+                      style: tt.bodySmall?.copyWith(color: cs.primary),
+                    ),
                   if (item.isCustomizable)
                     TextButton(
                       onPressed: () {
                         HapticService.tap();
+                        if (item.isComboTemplate) {
+                          openComboCustomizationScreen(
+                            context,
+                            comboItem: item,
+                            cart: cart,
+                            editingCartItem: cartItem,
+                          );
+                          return;
+                        }
                         showItemDetail(
                           context,
                           item,
@@ -365,7 +381,17 @@ class _CartItemTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (item.originalPrice != null)
+                  if (comboDetails != null)
+                    Text(
+                      '₹${(comboDetails.aLaCarteTotal * cartItem.quantity).round()}',
+                      textAlign: TextAlign.right,
+                      style: tt.bodySmall?.copyWith(
+                        color: cs.onSurfaceVariant.withAlpha(120),
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: cs.onSurfaceVariant.withAlpha(120),
+                      ),
+                    )
+                  else if (item.originalPrice != null)
                     Text(
                       '₹${(item.originalPrice! * cartItem.quantity).round()}',
                       textAlign: TextAlign.right,
